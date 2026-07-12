@@ -1,0 +1,274 @@
+<title>Werkstatt-Canvas — n8n-Rip (Vorschau)</title>
+<style>
+  :root{
+    --bg:#f5f5f5; --dot:#999999; --node-bg:#ffffff; --node-bd:rgba(0,0,0,0.10);
+    --ink:#262626; --mut:#737373; --line:#e5e5e5;
+    --wire:#cacaca; --wire-h:#6f6f6f;
+    --brand:#ff6900; --coral:#ff6d5a; --pink:#ea4b71; --purple:#7f22fe;
+    --ok:#00a63e; --err:#e7000b; --gold:#b57617; --toggle-on:#00c950;
+    --font:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--ink);background:var(--bg);overflow:hidden;height:100vh;width:100vw}
+  /* ── Header (n8n chrome) ── */
+  .hdr{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 14px;z-index:40}
+  .rail-logo{width:28px;height:28px;border-radius:7px;background:#1F7A5A;color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+  .wf-name{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+  .wf-name .tag{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:1px 7px}
+  .hsp{flex:1}
+  .hint-top{font-size:12px;color:var(--mut)}
+  .btn2{font-size:13px;padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .btn1{font-size:13px;font-weight:500;padding:6px 14px;border-radius:4px;border:none;background:var(--brand);color:#fff;cursor:pointer}
+  .btn1:hover{background:#f54900}
+  .switch{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mut)}
+  .knob{width:34px;height:19px;border-radius:10px;background:#bbbbbb;position:relative;cursor:default}
+  .knob::after{content:"";position:absolute;left:2px;top:2px;width:15px;height:15px;border-radius:50%;background:#fff}
+  /* Tab-Pille (n8n TabBar: schwebt mittig an der Header-Unterkante) */
+  .tabs{position:fixed;top:56px;left:50%;transform:translate(-50%,-50%);background:#e5e5e5;border-radius:5px;padding:2px;display:flex;z-index:41}
+  .tab{font-size:13px;padding:5px 16px;border-radius:4px;color:var(--mut);cursor:pointer;user-select:none}
+  .tab.on{background:#fff;color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  /* ── Canvas ── */
+  #vp{position:fixed;inset:56px 0 0 0;overflow:hidden;cursor:grab}
+  #vp.panning{cursor:grabbing}
+  #plane{position:absolute;left:0;top:0;width:3200px;height:1800px;transform-origin:0 0;
+    background-image:radial-gradient(var(--dot) 0.5px, transparent 0.6px);background-size:16px 16px}
+  #wires{position:absolute;left:0;top:0;width:3200px;height:1800px;pointer-events:none}
+  .wire{stroke:var(--wire);stroke-width:2;fill:none;stroke-linecap:square}
+  .run .wire.ran{stroke:var(--ok)}
+  .wlab{font-size:13px;fill:var(--mut);display:none}
+  .run .wlab{display:block}
+  /* ── Nodes (96×96, r20, Border 1.5) ── */
+  .node{position:absolute;width:96px;height:96px;background:var(--node-bg);border:1.5px solid var(--node-bd);border-radius:20px;cursor:pointer;display:grid;place-items:center;user-select:none;touch-action:none}
+  .node:hover{border-color:rgba(0,0,0,.2)}
+  .node.sel{box-shadow:0 0 0 6px hsla(220,47%,30%,0.1)}
+  .node.trigger{border-radius:36px 20px 20px 36px}
+  .node.trigger .zap{position:absolute;left:-26px;top:50%;transform:translateY(-50%);color:var(--coral);width:18px;height:18px}
+  .node svg.ic{width:44px;height:44px}
+  .node .lbl{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:8px;text-align:center;width:150px}
+  .node .lbl b{display:block;font-size:15px;font-weight:500;line-height:1.25}
+  .node .lbl span{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+  .port{position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid #989898;top:50%;transform:translateY(-50%);z-index:2}
+  .port.in{left:-8px}.port.out{right:-8px}
+  .node.gate{transform:rotate(0);border-radius:14px;width:88px;height:88px}
+  .node.gate .ic{color:var(--gold)}
+  .node.tool{border-style:dashed}
+  .node.wide{width:230px;border-radius:16px}
+  .node.dis{opacity:.75}
+  .node.dis .lbl b::after{content:" ";display:block}
+  /* Executions-Modus */
+  .run .node.ok{border:2px solid var(--ok)}
+  .run .node.fail{border:2px solid var(--err)}
+  .run .node.skip{opacity:.45}
+  .badge{position:absolute;right:6px;bottom:6px;width:16px;height:16px;border-radius:50%;display:none;place-items:center;font-size:11px;color:#fff;font-weight:700}
+  .run .node.ok .badge{display:grid;background:var(--ok)}
+  .run .node.fail .badge{display:grid;background:var(--err)}
+  /* Sticky Note */
+  .sticky{position:absolute;width:250px;min-height:120px;background:#fef9c2;border:1px solid #fff085;border-radius:4px;padding:12px 14px;font-size:13.5px;line-height:1.5;color:#2b2b2b;cursor:pointer;user-select:none;touch-action:none}
+  .sticky b{font-weight:600;display:block;margin-bottom:4px}
+  /* Zoom controls bottom-left */
+  .zctl{position:fixed;left:14px;bottom:14px;display:flex;flex-direction:column;gap:2px;z-index:30}
+  .zbtn{width:38px;height:34px;border:none;background:transparent;border-radius:6px;color:#737373;font-size:16px;cursor:pointer;display:grid;place-items:center}
+  .zbtn:hover{background:rgba(0,0,0,.05)}
+  /* Detail-Panel (NDV-light) */
+  #panel{position:fixed;top:56px;right:0;bottom:0;width:330px;background:#fff;border-left:1px solid var(--line);z-index:35;transform:translateX(100%);transition:transform .18s ease;display:flex;flex-direction:column}
+  #panel.open{transform:translateX(0)}
+  #panel .ph{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  #panel .ph b{font-size:15px;flex:1}
+  #panel .ph button{border:none;background:transparent;font-size:16px;color:var(--mut);cursor:pointer}
+  #panel .pb{padding:16px;font-size:13.5px;line-height:1.6;overflow:auto}
+  #panel .pb .k{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin:14px 0 4px}
+  #panel .pb .k:first-child{margin-top:0}
+  #panel code{background:#f5f5f5;border:1px solid var(--line);border-radius:4px;padding:2px 7px;font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .note-fixed{position:fixed;right:14px;bottom:14px;font-size:12px;color:var(--mut);background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:6px;padding:6px 11px;z-index:30}
+</style>
+
+<div class="hdr">
+  <div class="rail-logo">R</div>
+  <div class="wf-name">creative-produktion <span class="tag">workflows/creative-produktion.md</span> <span class="tag" style="color:#1F7A5A;border-color:#bfe0d2">Geld-Workflow</span></div>
+  <div class="hsp"></div>
+  <span class="hint-top">Nur Anschauung — gebaut &amp; ausgeführt wird im Chat</span>
+  <button class="btn2">Teilen</button>
+  <button class="btn1">Gespeichert</button>
+  <div class="switch"><span>Inactive</span><div class="knob"></div></div>
+</div>
+<div class="tabs">
+  <div class="tab on" id="tab-editor">Editor</div>
+  <div class="tab" id="tab-exec">Executions</div>
+</div>
+
+<div id="vp"><div id="plane">
+  <svg id="wires" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="arr" viewBox="-6 -5 12 10" markerWidth="12.5" markerHeight="12.5" orient="auto" refX="0" refY="0"><polygon points="-5,-4 0,0 -5,4" fill="context-stroke"></polygon></marker></defs>
+  </svg>
+</div></div>
+
+<div class="zctl">
+  <button class="zbtn" id="z-fit" title="Einpassen">⛶</button>
+  <button class="zbtn" id="z-in" title="Zoom rein">+</button>
+  <button class="zbtn" id="z-out" title="Zoom raus">−</button>
+</div>
+<div class="note-fixed">Ziehen = Karte bewegen · Knoten ziehen = umsortieren (nur Optik) · Klick = Details · Tab „Executions" = Beispiel-Lauf</div>
+
+<div id="panel">
+  <div class="ph"><b id="p-name">—</b><button id="p-close">✕</button></div>
+  <div class="pb" id="p-body"></div>
+</div>
+
+<script>
+// ── Daten: die echte Kette (Dummy-Inhalte, nur Anschauung) ──
+const IC = {
+  zap:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" stroke-linejoin="round"/></svg>',
+  search:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg>',
+  user:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-3.5 4-5 7.5-5s6 1.5 7.5 5"/></svg>',
+  bulb:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.7 1 1.5 1 2.5h6c0-1 .2-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>',
+  swipe:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16M9 5v14"/></svg>',
+  pen:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><path d="m14 5 5 5L8 21H3v-5L14 5z"/><path d="m12 7 5 5"/></svg>',
+  check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#b57617" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>',
+  gear:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.5-2-1.5A7 7 0 0 0 19 12z"/></svg>',
+  chart:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8"><path d="M4 20V6M4 20h16"/><path d="m7 14 4-4 3 3 5-6"/></svg>',
+  db:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#7f22fe" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5V18c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5.5"/><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg>',
+  film:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 10h4M3 14h4M17 10h4M17 14h4"/></svg>',
+  flask:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><path d="M10 3v6L4.5 19a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 9V3M8 3h8"/></svg>',
+  folder:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ea4b71" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>',
+};
+const NODES = [
+  {id:'start', x:120,  y:300, ic:'zap',   trigger:1, name:'Batch-Start', sub:'Du, im Chat', typ:'Trigger',
+   info:{was:'Du startest einen neuen Ad-Batch im Chat („neuer Batch: Zahngesundheit").', cmd:'im Chat: „neuer Batch: …"', mehr:'Kein Formular, kein Button — der Chat ist der Startknopf.'}},
+  {id:'voc',   x:340,  y:300, ic:'search', name:'VoC-Research', sub:'Skill · agentic', typ:'Skill',
+   info:{was:'Kundenstimmen sammeln (Web + lokaler 11k-Korpus), 4-Block-Framework, wörtliche Zitate.', cmd:'/voice-of-customer-research', mehr:'Zuletzt: vor 2 Tagen · nutzt Tools: forum, reddit, voc-index'}},
+  {id:'avatar',x:560,  y:300, ic:'user',  name:'Avatar-Sheet', sub:'Skill · agentic', typ:'Skill',
+   info:{was:'Aus der Research DEN einen primären Avatar bauen — liest sich wie ein echter Mensch.', cmd:'/primary-avatar-sheet', mehr:'Zuletzt: gestern („Sandra", Zahngesundheit)'}},
+  {id:'mech',  x:780,  y:300, ic:'bulb',  name:'Mechanismen', sub:'Skill · cowork', typ:'Skill',
+   info:{was:'Unique Mechanisms nach RMBC II: Ideation → Ranking → Expansion (heute: M1 Kau-Ritual + M2 Freiwilligkeit).', cmd:'im Cowork-Chat (Skill in Destillation)', mehr:'Heute real gelaufen — Kandidat für die nächste SKILL.md'}},
+  {id:'konzept',x:1000, y:300, ic:'swipe', name:'Konzept / Swipe', sub:'Skill · cowork', typ:'Skill',
+   info:{was:'Gewinner-Ad analysieren (WARUM gewinnt sie) → mit unserem Brief neu bauen. Swipe, nicht Synthese.', cmd:'im Cowork-Chat', mehr:'Quelle: Creative Database / Ad-Library'}},
+  {id:'copy',  x:1220, y:300, ic:'pen',   name:'Copy (RMBC)', sub:'Skill · cowork', typ:'Skill',
+   info:{was:'Skript in wörtlicher Kundensprache, VoC-belegt. Hooks × Bodies.', cmd:'im Cowork-Chat', mehr:'Braucht: Avatar + Mechanismus + VoC-Belege'}},
+  {id:'gate',  x:1440, y:300, ic:'check', gate:1, name:'Deine Abnahme', sub:'Gate · Mensch', typ:'Abnahme-Gate',
+   info:{was:'DU entscheidest: welche Ads gehen raus. Compliance machst du selbst.', cmd:'im Chat: „freigegeben" / „Änderung: …"', mehr:'Das einzige Pflicht-Glied für den Menschen — bewusst.'}},
+  {id:'upload',x:1660, y:300, ic:'gear', tool:1, name:'Ads Uploader', sub:'Tool ⚙', typ:'Tool',
+   info:{was:'Bulk-Upload via Meta Marketing API: Batch = Ad-Set aus Vorlage geklont, PAUSED.', cmd:'node tools/ad-launcher/launch.ts <ordner> --launch', mehr:'v1 real getestet 07.07 (Test-Ad bestätigt)'}},
+  {id:'report',x:1880, y:300, ic:'chart', tool:1, name:'ad-report', sub:'Tool ⚙', typ:'Tool',
+   info:{was:'Zieht die Meta-Zahlen je Ad zurück (ROAS & Co.) — der Mess-Schritt.', cmd:'node tools/ad-report.ts', mehr:'Füttert die Creative Database'}},
+  {id:'cdb',   x:2100, y:300, ic:'db',    data:1, name:'Creative Database', sub:'Daten', typ:'Daten-Speicher',
+   info:{was:'Jede Ad zerlegt in Komponenten + Performance zurückgespielt → Winner-/Loser-Muster statt raten.', cmd:'creative-database/', mehr:'Speist den nächsten Batch (Kreis schließt sich → zurück zu Konzept)'}},
+  // Lose Skills (unverbunden, unten)
+  {id:'mp4',   x:340,  y:640, ic:'film',  name:'mp4-analyzer', sub:'Skill · lose', typ:'Skill (lose)',
+   info:{was:'Video verlustfrei in EIN Wissens-Dokument (Transkript + Bild, zeitgestempelt).', cmd:'/mp4-analyzer', mehr:'In keiner Kette — Wissens-Zulieferer auf Zuruf'}},
+  {id:'exp',   x:560,  y:640, ic:'flask', name:'exp', sub:'Skill · lose', typ:'Skill (lose)',
+   info:{was:'Experiment-Pipeline (OFFEN→LÄUFT→ERLEDIGT).', cmd:'/exp', mehr:'Wenig genutzt — Kandidat: in Projekte einziehen oder ausmisten'}},
+  {id:'projekt',x:780, y:640, ic:'folder',name:'projekt', sub:'Skill · lose', typ:'Skill (lose)',
+   info:{was:'Projekt anlegen · verbinden · pflegen (PROJEKT.md = Kontextkapsel).', cmd:'/projekt <name>', mehr:'Quer-Skill — gehört bewusst in keine Kette'}},
+];
+const EDGES = [
+  ['start','voc'],['voc','avatar'],['avatar','mech'],['mech','konzept'],['konzept','copy'],
+  ['copy','gate'],['gate','upload'],['upload','report'],['report','cdb'],
+];
+const RUN = { ok:['start','voc','avatar','mech','konzept'], fail:['copy'], skip:['gate','upload','report','cdb'],
+  labels:{'voc-avatar':'214 Zitate','avatar-mech':'1 Avatar','mech-konzept':'5 Mechanismen','konzept-copy':'1 Konzept'} };
+
+const plane=document.getElementById('plane'), wires=document.getElementById('wires'), vp=document.getElementById('vp');
+const NODE_W=id=>{const n=byId[id]; return n.el.offsetWidth;};
+let byId={};
+
+// Nodes bauen
+for(const n of NODES){
+  const el=document.createElement('div');
+  el.className='node'+(n.trigger?' trigger':'')+(n.gate?' gate':'')+(n.tool?' tool':'')+(n.data?' wide':'');
+  el.style.left=n.x+'px'; el.style.top=n.y+'px'; el.dataset.id=n.id;
+  el.innerHTML=(n.trigger?'<svg class="zap" viewBox="0 0 24 24" fill="#ff6d5a"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>':'')
+    + IC[n.ic]
+    + (n.trigger?'':'<span class="port in"></span>')+'<span class="port out"></span>'
+    + '<span class="badge"></span>'
+    + `<span class="lbl"><b>${n.name}</b><span>${n.sub}</span></span>`;
+  plane.appendChild(el); n.el=el; byId[n.id]=n;
+}
+// Sticky Notes
+function sticky(x,y,html){ const s=document.createElement('div'); s.className='sticky'; s.style.left=x+'px'; s.style.top=y+'px'; s.innerHTML=html; plane.appendChild(s); return s; }
+sticky(1150,80,'<b>Denk-Notiz</b>Bottleneck? Copy scheitert, wenn VoC-Belege zum Narkose-Winkel fehlen → evtl. neues Glied „VoC-Beleg-Check" vor Copy.');
+sticky(120,540,'<b>Lose Skills</b>In keiner Kette. Entweder künftige Glieder — oder Ausmist-Kandidaten. Genau dafür ist dieses Regal da.');
+
+// Wires zeichnen
+function path(a,b){
+  const na=byId[a], nb=byId[b];
+  const x1=na.x+na.el.offsetWidth+8, y1=na.y+na.el.offsetHeight/2;
+  const x2=nb.x-8, y2=nb.y+nb.el.offsetHeight/2;
+  const d=Math.max(40,Math.abs(x2-x1)*0.25);
+  return {d:`M ${x1} ${y1} C ${x1+d} ${y1}, ${x2-d} ${y2}, ${x2} ${y2}`, mx:(x1+x2)/2, my:(y1+y2)/2-8};
+}
+function drawWires(){
+  while(wires.childNodes.length>1) wires.removeChild(wires.lastChild);
+  for(const [a,b] of EDGES){
+    const p=path(a,b);
+    const el=document.createElementNS('http://www.w3.org/2000/svg','path');
+    el.setAttribute('d',p.d); el.setAttribute('class','wire'+(RUN.ok.includes(a)&&(RUN.ok.includes(b)||RUN.fail.includes(b))?' ran':'')); el.setAttribute('marker-end','url(#arr)');
+    wires.appendChild(el);
+    const key=a+'-'+b, lab=RUN.labels[key];
+    if(lab){ const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',p.mx); t.setAttribute('y',p.my); t.setAttribute('text-anchor','middle'); t.setAttribute('class','wlab'); t.textContent=lab; wires.appendChild(t); }
+  }
+}
+drawWires();
+
+// Pan & Zoom
+let tx=0, ty=0, sc=1;
+function apply(){ plane.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`; }
+function fit(){ const vw=vp.clientWidth, vh=vp.clientHeight; sc=Math.min(1,(vw-80)/2320); tx=40-120*sc+20; ty=(vh/2)-(340*sc)-40; apply(); }
+document.getElementById('z-in').onclick=()=>{ sc=Math.min(2,sc*1.18); apply(); };
+document.getElementById('z-out').onclick=()=>{ sc=Math.max(.25,sc/1.18); apply(); };
+document.getElementById('z-fit').onclick=fit;
+vp.addEventListener('wheel',e=>{ e.preventDefault(); const f=e.deltaY<0?1.08:1/1.08; const r=vp.getBoundingClientRect(); const cx=e.clientX-r.left, cy=e.clientY-r.top; tx=cx-(cx-tx)*f; ty=cy-(cy-ty)*f; sc=Math.max(.25,Math.min(2,sc*f)); apply(); },{passive:false});
+
+// Dragging (Pan auf Hintergrund, Node-Drag auf Knoten/Sticky)
+let drag=null;
+vp.addEventListener('pointerdown',e=>{
+  const nodeEl=e.target.closest('.node'), stEl=e.target.closest('.sticky');
+  if(nodeEl){ const n=byId[nodeEl.dataset.id]; drag={t:'node',n,sx:e.clientX,sy:e.clientY,ox:n.x,oy:n.y,moved:false}; }
+  else if(stEl){ drag={t:'st',el:stEl,sx:e.clientX,sy:e.clientY,ox:parseFloat(stEl.style.left),oy:parseFloat(stEl.style.top),moved:false}; }
+  else { drag={t:'pan',sx:e.clientX,sy:e.clientY,ox:tx,oy:ty}; vp.classList.add('panning'); }
+  vp.setPointerCapture(e.pointerId);
+});
+vp.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const dx=e.clientX-drag.sx, dy=e.clientY-drag.sy;
+  if(Math.abs(dx)+Math.abs(dy)>3) drag.moved=true;
+  if(drag.t==='pan'){ tx=drag.ox+dx; ty=drag.oy+dy; apply(); }
+  else if(drag.t==='node'){ drag.n.x=drag.ox+dx/sc; drag.n.y=drag.oy+dy/sc; drag.n.el.style.left=drag.n.x+'px'; drag.n.el.style.top=drag.n.y+'px'; drawWires(); }
+  else { drag.el.style.left=(drag.ox+dx/sc)+'px'; drag.el.style.top=(drag.oy+dy/sc)+'px'; }
+});
+vp.addEventListener('pointerup',e=>{
+  if(drag && drag.t==='node' && !drag.moved) openPanel(drag.n);
+  if(drag && drag.t==='pan') vp.classList.remove('panning');
+  drag=null;
+});
+
+// Detail-Panel
+const panel=document.getElementById('panel');
+function openPanel(n){
+  document.querySelectorAll('.node.sel').forEach(x=>x.classList.remove('sel'));
+  n.el.classList.add('sel');
+  document.getElementById('p-name').textContent=n.name;
+  document.getElementById('p-body').innerHTML=
+    `<div class="k">Typ</div>${n.typ}`+
+    `<div class="k">Was es tut</div>${n.info.was}`+
+    `<div class="k">So nutzt du es</div><code>${n.info.cmd}</code>`+
+    `<div class="k">Notizen</div>${n.info.mehr}`+
+    `<div class="k">Merke</div>Diese Ansicht zeigt nur an — gebaut, geändert und ausgeführt wird im Chat.`;
+  panel.classList.add('open');
+}
+document.getElementById('p-close').onclick=()=>{ panel.classList.remove('open'); document.querySelectorAll('.node.sel').forEach(x=>x.classList.remove('sel')); };
+
+// Tabs: Editor / Executions (Beispiel-Lauf)
+const tabE=document.getElementById('tab-editor'), tabX=document.getElementById('tab-exec');
+function setRun(on){
+  document.body.classList.toggle('run',on);
+  tabE.classList.toggle('on',!on); tabX.classList.toggle('on',on);
+  for(const n of NODES){ n.el.classList.remove('ok','fail','skip');
+    if(on){ if(RUN.ok.includes(n.id)){n.el.classList.add('ok'); n.el.querySelector('.badge').textContent='✓';}
+      else if(RUN.fail.includes(n.id)){n.el.classList.add('fail'); n.el.querySelector('.badge').textContent='✕';}
+      else if(RUN.skip.includes(n.id)){n.el.classList.add('skip');} } }
+  drawWires();
+}
+tabE.onclick=()=>setRun(false); tabX.onclick=()=>setRun(true);
+
+fit();
+</script>

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "awms-graph",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["app/server.mjs"],
+      "port": 4100
+    },
+    {
+      "name": "awms-graph-preview",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "PORT=4102 node app/server.mjs"],
+      "port": 4102
+    }
+  ]
+}

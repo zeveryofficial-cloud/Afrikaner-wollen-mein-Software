@@ -1,0 +1,268 @@
+/* AWMS — n8n-Rip (Basis: referenz/graph-design-beispiel.html + referenz/n8n-design-spec.md).
+   Shell: Entwurf A (Seitenleiste) · Listen: Entwurf B (Karten) · Light-Mode, System-Font. */
+:root{
+  --bg:#f5f5f5; --dot:#999999; --node-bg:#ffffff; --node-bd:rgba(0,0,0,0.10);
+  --ink:#262626; --mut:#737373; --line:#e5e5e5;
+  --wire:#cacaca; --wire-h:#6f6f6f;
+  --brand:#ff6900; --coral:#ff6d5a; --pink:#ea4b71; --purple:#7f22fe; --blau:#1971c2;
+  --ok:#00a63e; --err:#e7000b; --gold:#b57617; --gruen:#1F7A5A;
+  --font:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);height:100vh;width:100vw;overflow:hidden;display:flex}
+svg{flex:none}
+
+/* ── Seitenleiste (Entwurf A) ── */
+#sb{width:240px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:45}
+#sb .logo{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+#sb .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+#sb .logo b{font-size:14px;font-weight:600}
+#sb nav{padding:10px 8px;display:flex;flex-direction:column;gap:2px}
+.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;font-size:13.5px;color:var(--ink);cursor:pointer;text-decoration:none}
+.nv:hover{background:#f5f5f5}
+.nv.on{background:#f0f0f0;font-weight:600}
+.nv .nvic{display:grid;place-items:center}
+.nv .nvic svg{width:17px;height:17px}
+.nv .zahl{margin-left:auto;font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:9px;padding:1px 7px;background:#fff}
+.nv .zahl:empty{display:none}
+#sb .sect{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:14px 12px 4px}
+#sb .fuss{margin-top:auto;padding:12px 16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);line-height:1.5}
+
+/* ── Inhaltsbereich ── */
+#content{flex:1;position:relative;overflow:hidden;background:var(--bg)}
+#content.scroll{overflow:auto}
+
+/* ── Listen-Seiten ── */
+.seite{padding:24px 32px;max-width:1160px}
+.seite .kopf{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
+.seite h1{font-size:20px;font-weight:600}
+.seite .hint{font-size:12px;color:var(--mut)}
+.leer{border:1px dashed var(--line);border-radius:10px;padding:34px;text-align:center;color:var(--mut);font-size:13px;background:#fff}
+
+/* Workflow-Zeilen (Entwurf A) */
+.zeile{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:10px;cursor:pointer;transition:box-shadow .12s}
+.zeile:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.zeile .ikon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;background:#fff3e8;color:var(--brand)}
+.zeile .ikon svg{width:20px;height:20px}
+.zeile .txt{min-width:0}
+.zeile .txt b{display:block;font-size:14.5px;font-weight:600}
+.zeile .txt span{display:block;font-size:12.5px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zeile .meta{margin-left:auto;text-align:right;font-size:12px;color:var(--mut);flex:none}
+.zeile .meta .tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:1px 7px;margin-left:4px}
+.zeile .meta .tag.geld{color:var(--gruen);border-color:#bfe0d2}
+.zeile .pfeil{color:var(--mut);font-size:16px;flex:none;margin-left:4px}
+
+/* Baustein-Karten (Entwurf B, bereinigt: ein Logo pro Typ, keine Badges) */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.karte{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;cursor:pointer;transition:box-shadow .12s;display:flex;flex-direction:column;gap:10px}
+.karte:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.karte .kkopf{display:flex;align-items:center;gap:10px}
+.karte .ikon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;flex:none}
+.karte .ikon svg{width:19px;height:19px}
+.karte b{font-size:14.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.karte p{font-size:12.5px;color:var(--mut);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:56px}
+.karte .kfuss{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--mut);border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+.karte .kfuss code{background:#f5f5f5;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-family:ui-monospace,Menlo,monospace;font-size:11px}
+.karte .kfuss .re{margin-left:auto;white-space:nowrap}
+.karte.k-skill .ikon{background:#fdeef2;color:var(--pink)}
+.karte.k-tool .ikon{background:#f0f0f0;color:var(--mut)}
+.karte.k-software .ikon{background:#e8f1fb;color:var(--blau)}
+.karte.k-swbaustein .ikon{background:#eef2ff;color:#4f46e5}
+.karte.k-datenbank .ikon{background:#f3ecfe;color:var(--purple)}
+
+/* ── Graph: Header (n8n chrome, im Inhaltsbereich) ── */
+.hdr{position:absolute;top:0;left:0;right:0;height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 18px;z-index:40}
+.wf-name{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap;overflow:hidden}
+.wf-name .tag{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:1px 7px;font-weight:400;white-space:nowrap}
+.wf-name .tag.geld{color:var(--gruen);border-color:#bfe0d2}
+
+.hsp{flex:1}
+/* Aktivierungs-Prompt-Knopf: kopieren → in neuen Chat einfügen → Workflow läuft */
+.btn2{font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:6px;border:1px solid var(--line);
+  background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn2:hover{border-color:#c9c9c9;background:#fafafa}
+/* Blitz-Knopf auf Workflow-Zeilen: Aktivierungs-Prompt kopieren */
+.loesch.akt{color:var(--brand)}
+.loesch.akt:hover{background:#fff3e8}
+
+/* Tab-Pille (n8n TabBar: schwebt mittig an der Header-Unterkante) */
+.tabs{position:absolute;top:56px;left:50%;transform:translate(-50%,-50%);background:#e5e5e5;border-radius:5px;padding:2px;display:flex;z-index:41}
+.tab{font-size:13px;padding:5px 16px;border-radius:4px;color:var(--mut);cursor:pointer;user-select:none}
+.tab.on{background:#fff;color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.tab.dis{opacity:.55;cursor:not-allowed}
+.tab.dis sup{font-size:9px;margin-left:3px;color:var(--mut)}
+/* Ebenen-Umschalter (rechts): Aktuell = das Gebaute · Idee = der Ersatz-Vorschlag */
+.tabs.ebenen{left:auto;right:18px;transform:translateY(-50%)}
+.tabs.ebenen .tab.idee{color:var(--gold)}
+.tabs.ebenen .tab.idee.on{background:#fff7e0;color:var(--gold);font-weight:600}
+
+/* ── Canvas ── */
+#vp{position:absolute;inset:56px 0 0 0;overflow:hidden;cursor:grab}
+#vp.panning{cursor:grabbing}
+/* Punkte-Raster: eigenes Canvas hinter der Fläche (graph.js zeichnet) — wandert mit
+   Pan & Zoom und zieht sich in Maus-Nähe ganz leicht zur Maus (Gravitation, dezent). */
+#dots{position:absolute;inset:0;pointer-events:none}
+#plane{position:absolute;left:0;top:0;width:3200px;height:1800px;transform-origin:0 0}
+#wires{position:absolute;left:0;top:0;width:3200px;height:1800px;pointer-events:none}
+.wire{stroke:var(--wire);stroke-width:2;fill:none;stroke-linecap:square}
+.wire.neben{stroke-dasharray:5,6}
+.wire.geist{opacity:.4;stroke-dasharray:5,6}
+.wire.schleife{stroke:#c9b6f0}
+#wires .wlab{fill:var(--mut)}
+#arr polygon{fill:var(--wire)}
+.wlab{font-size:12px;fill:var(--mut)}
+
+/* ── Nodes (96×96, r20, Border 1.5, Icon 48, Label 16/13 lt. Spec) ── */
+.node{position:absolute;width:96px;height:96px;background:var(--node-bg);border:1.5px solid var(--node-bd);border-radius:20px;cursor:pointer;display:grid;place-items:center;user-select:none;touch-action:none;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+/* Hover = leichte „Anti-Gravität": 2px Auftrieb + weicher Schatten. Dezent, kein Zirkus. */
+.node:hover{border-color:rgba(0,0,0,.2);transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.09)}
+.node.sel{box-shadow:0 0 0 6px hsla(220,47%,30%,0.1)}
+.node svg.ic{width:48px;height:48px;color:var(--pink)}
+.node .lbl{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:8px;text-align:center;width:170px;pointer-events:none}
+.node .lbl b{display:block;font-size:16px;font-weight:500;line-height:1.25}
+.node .lbl span{display:block;font-size:13px;color:var(--mut);margin-top:2px}
+
+/* Trigger: linke Seite runder + Blitz außen (n8n) */
+.node.trigger{border-radius:36px 20px 20px 36px}
+.node.trigger .zap{position:absolute;left:-26px;top:50%;transform:translateY(-50%);color:var(--coral);width:18px;height:18px}
+
+/* Gate: abgerundetes Quadrat 88×88, r14, goldenes Icon (vom User gewählte Optik) */
+.node.gate{border-radius:14px;width:88px;height:88px}
+.node.gate svg.ic{color:var(--gold)}
+
+/* Tool: gestrichelter Rand + graues Icon */
+.node.tool{border-style:dashed}
+.node.tool svg.ic{color:var(--mut)}
+
+/* Software: Monitor blau — vom Menschen bedient (kein Baustein) */
+.node.software svg.ic{color:var(--blau)}
+
+/* Breite Knoten (Datenbank lila · Workflow orange): Icon links, Label innen */
+.node.db,.node.wf{width:230px;border-radius:16px;display:flex;align-items:center;gap:12px;padding:0 16px;justify-content:flex-start}
+.node.db svg.ic,.node.wf svg.ic{width:36px;height:36px;flex:none}
+.node.db svg.ic{color:var(--purple)}
+.node.wf svg.ic{color:var(--brand)}
+.node .dblbl{min-width:0}
+.node .dblbl b{display:block;font-size:14px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node .dblbl span{display:block;font-size:12px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node.db .dblbl span{color:var(--purple)}
+.node.wf .dblbl span{color:var(--mut)}
+
+/* Vektor-Datenbank: gleiche Lila-Familie, eigener Look — Embedding-Punktraster + Doppelring */
+.node.db.vektor:not(.geist){background:linear-gradient(135deg,#fdfcff,#f7f2ff);border-color:rgba(127,34,254,.30);box-shadow:0 0 0 3px rgba(127,34,254,.07)}
+.node.db.vektor:not(.geist)::before{content:"";position:absolute;inset:0;border-radius:inherit;background-image:radial-gradient(rgba(127,34,254,.13) 1px,transparent 1.3px);background-size:11px 11px;pointer-events:none}
+.node.db.vektor:not(.geist):hover{border-color:rgba(127,34,254,.55)}
+.node.db.vektor.sel{box-shadow:0 0 0 3px rgba(127,34,254,.07),0 0 0 6px hsla(220,47%,30%,0.1)}
+
+/* Ports: 16px-Kreise; Nebenports (DB-Verbindungen) als Rauten */
+.port{position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid #989898;top:50%;transform:translateY(-50%);z-index:2}
+.port.in{left:-8px}.port.out{right:-8px}
+.port.sub{top:auto;bottom:-8px;left:50%;transform:translateX(-50%) rotate(45deg) scale(.8);border-radius:2px}
+.port.top{top:-8px;left:50%;transform:translateX(-50%) rotate(45deg) scale(.8);border-radius:2px}
+
+/* Zonen-Rahmen in der Übersicht (berechnet aus Tags — reine Optik) */
+.zonebox{position:absolute;border:1.5px dashed rgba(0,0,0,.13);border-radius:16px;pointer-events:none}
+.zonebox span{position:absolute;top:10px;left:16px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.zonebox.warn{border-color:#e0c98f}
+.zonebox.warn span{color:var(--gold)}
+
+/* Kanten-Labels erst ab Zoom-Nähe (sonst Label-Brei) */
+#wires .wlab{display:none}
+#wires.labels-an .wlab{display:block}
+
+/* Befund-Seite */
+[class*="befund-"] .txt span{white-space:normal}
+.bpunkt{width:10px;height:10px;border-radius:50%;flex:none}
+.bpunkt.rot{background:var(--err)}
+.bpunkt.gold{background:var(--gold)}
+.bpunkt.grau{background:#bbbbbb}
+.zahl.alarm{color:var(--err);border-color:#f0b9bd}
+
+/* Software: Läuft-LED (live am Port berechnet) + Link im Panel */
+.led{width:9px;height:9px;border-radius:50%;flex:none;margin-left:auto}
+.led.an{background:var(--ok);box-shadow:0 0 0 3px rgba(0,166,62,.14)}
+.led.aus{background:#c4c4c4}
+.plink{font-size:13px;color:var(--blau);word-break:break-all}
+
+/* Karten-Chip: berechneter Einsatz („in N Ketten" / „lose") */
+.pill{display:inline-block;font-size:10.5px;border-radius:9px;padding:1px 8px;border:1px solid var(--line);color:var(--mut);vertical-align:1px}
+.pill.kette{color:var(--gruen);border-color:#bfe0d2}
+.pill.lose{color:var(--gold);border-color:#e7d9b8}
+.pill.agentik{color:#4f46e5;border-color:#c7d2fe}
+
+/* Geister-Knoten: geplanter Baustein — Datei existiert (noch) nicht */
+.node.geist{border-style:dashed;border-color:rgba(0,0,0,.18);background:#fcfcfc}
+.node.geist svg.ic{opacity:.35}
+.node.geist .lbl b,.node.geist .dblbl b{color:var(--mut)}
+.node.geist .lbl span,.node.geist .dblbl span{color:#b0b0b0}
+.node.geist .port{border-style:dashed}
+.tag.entwurf{color:var(--gold);border-color:#e7d9b8}
+
+/* „Später": zurückgestellte Zukunft steht NICHT in der Kette — sie liegt als loser
+   gelber Zettel auf der Fläche. Verschiebbar (nur Optik) · Klick = Zukunfts-Skizze. */
+.tag.spaeter{color:var(--blau);border-color:#c4dcf3}
+.spnote{position:absolute;width:172px;padding:10px 13px 12px;background:#fff7d6;
+  border:1px solid #e3cf86;border-radius:8px;box-shadow:0 2px 7px rgba(0,0,0,.10);
+  transform:rotate(-1.6deg);cursor:grab;z-index:3;user-select:none;
+  transition:box-shadow .16s ease,transform .16s ease}
+.spnote:hover{box-shadow:0 6px 16px rgba(0,0,0,.15);transform:rotate(-1.6deg) translateY(-2px)}
+.spnote:active{cursor:grabbing}
+.spnote b{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:#96771c}
+.spnote b svg{width:13px;height:13px;flex:none}
+.spnote span{display:block;font-size:12.5px;font-weight:600;color:#5d4c15;margin-top:6px;line-height:1.35}
+.spnote i{display:block;font-size:11px;font-style:normal;color:#96771c;margin-top:4px}
+/* Skizzen-Zeilen im Panel: je ein Baustein der Zukunft + seine Verbindungen */
+.spk{display:flex;gap:10px;align-items:flex-start;margin:10px 0;padding:10px 12px;
+  border:1px dashed #e3cf86;border-radius:10px;background:#fffdf2}
+.spk svg.ic{width:22px;height:22px;flex:none;color:#96771c;margin-top:1px}
+.spk b{font-size:13px}
+.spk>div>span{display:block;font-size:11.5px;color:var(--mut);margin-top:2px}
+.spk p{margin:6px 0 0;font-size:12px;color:var(--ink);line-height:1.45}
+
+/* Agentik-Karte (Software-Innenleben): KI-Agenten (Chip+Funke, indigo) entscheiden,
+   Wissens-Dateien (Dokument, warmgrau) sind die Skills, die die Software-KI liest. */
+.node.agent svg.ic{color:#4f46e5}
+.node.agent{background:#fbfbff}
+.node.wissen{border-radius:16px;background:#fffdfa}
+.node.wissen svg.ic{color:#8a6d3b;width:38px;height:38px}
+.node.wissen .lbl b{font-size:12px}
+/* Tool (Anruf-Baustein): schwebt über seinem Agenten — Stecker auf Schiefer,
+   dezenter Verlauf. Hin (prompt) und Zurück (antwort) als kurze parallele Bögen. */
+.node.dienst{background:linear-gradient(180deg,#fbfcfd,#eef2f6);border-color:#c9d3dd;border-radius:16px}
+.node.dienst svg.ic{color:#47586b}
+.node.dienst:hover{border-color:#94a3b8}
+.node.dienst .lbl span{color:#64748b}
+.wire.ruf{stroke:#9aa8b8;stroke-dasharray:3 3.5}
+
+/* Ordner-Knopf auf Baustein-Karten: öffnet den Ordner im Finder */
+.karte .ordner{flex:none;width:26px;height:24px;border:none;background:transparent;border-radius:5px;color:var(--mut);cursor:pointer;display:grid;place-items:center;margin-left:2px}
+.karte .ordner svg{width:15px;height:15px}
+.karte .ordner:hover{background:#f0f0f0;color:var(--ink)}
+
+/* Löschknopf — NUR auf reinen Konzept-Zeilen (Server erzwingt das zusätzlich) */
+.loesch{flex:none;width:34px;height:34px;border:none;background:transparent;border-radius:6px;color:var(--mut);cursor:pointer;display:grid;place-items:center;margin-left:4px}
+.loesch svg{width:17px;height:17px}
+.loesch:hover{background:#fceeee;color:var(--err)}
+
+/* Zoom controls unten links */
+.zctl{position:absolute;left:14px;bottom:14px;display:flex;flex-direction:column;gap:2px;z-index:30}
+.zbtn{width:38px;height:34px;border:none;background:transparent;border-radius:6px;color:#737373;font-size:16px;cursor:pointer;display:grid;place-items:center}
+.zbtn:hover{background:rgba(0,0,0,.05)}
+
+/* Detail-Panel (NDV-light, überlagert rechts) */
+#panel{position:fixed;top:0;right:0;bottom:0;width:330px;background:#fff;border-left:1px solid var(--line);z-index:60;transform:translateX(100%);transition:transform .18s ease;display:flex;flex-direction:column;box-shadow:-4px 0 18px rgba(0,0,0,.05)}
+#panel.open{transform:translateX(0)}
+#panel .ph{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+#panel .ph b{font-size:15px;flex:1}
+#panel .ph button{border:none;background:transparent;font-size:16px;color:var(--mut);cursor:pointer}
+#panel .pb{padding:16px;font-size:13.5px;line-height:1.6;overflow:auto}
+#panel .pb .k{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin:14px 0 4px}
+#panel .pb .k:first-child{margin-top:0}
+#panel code{background:#f5f5f5;border:1px solid var(--line);border-radius:4px;padding:2px 7px;font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+#panel .meta{font-size:12px;color:var(--mut)}
+
+/* Fehler-/Warnhinweis (z.B. Workflow-JSON kaputt) */
+.fehlkarte{position:absolute;top:96px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid var(--err);border-radius:8px;padding:14px 18px;font-size:13.5px;max-width:560px;z-index:50}
+.fehlkarte b{color:var(--err)}
