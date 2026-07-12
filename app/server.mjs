@@ -12,6 +12,9 @@ import { fileURLToPath } from 'node:url';
 const APP = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(APP, '..');
 const PORT = Number(process.env.PORT) || 4100;
+const HOME = process.env.HOME || '';
+// Pfade dürfen $HOME oder ~ nutzen statt /Users/<name> — maschinenunabhängig, kein Username im Repo.
+const expandHome = p => typeof p === 'string' ? p.replace(/^~(?=[/\\]|$)/, HOME).replace(/\$HOME/g, HOME) : p;
 
 // ── Datei-Helfer ──────────────────────────────────────────────────────────────
 function readSafe(p) {
@@ -62,8 +65,9 @@ function readProjekte(warnungen) {
   // 1) Einzeln registrierte Projekte.
   for (const p of parsed.projekte || []) {
     if (!p.name || !p.pfad) { warnungen.push('Registratur-Eintrag ohne name/pfad uebersprungen.'); continue; }
-    if (!fs.existsSync(p.pfad)) { warnungen.push(`Projekt "${p.name}": Ordner ${p.pfad} existiert nicht.`); continue; }
-    add(p.name, p.pfad);
+    const pfad = expandHome(p.pfad);
+    if (!fs.existsSync(pfad)) { warnungen.push(`Projekt "${p.name}": Ordner ${pfad} existiert nicht.`); continue; }
+    add(p.name, pfad);
   }
   // 2) Wurzeln: jeder Unterordner mit Bausteinen wird automatisch ein Projekt (kein Registrieren noetig).
   for (const w of parsed.wurzeln || []) {
@@ -166,6 +170,121 @@ function readAgentik(proj, swId) {
   try { return { ...JSON.parse(txt), datei: rel, mtime: mtimeIso(file) }; }
   catch (e) { return { fehler: `${rel}: kaputtes JSON — ${e.message}` }; }
 }
+// ── Lauf-Status: aus echten Artefakten berechnet (LKAP M2) ────────────────────
+// AWMS-Verfassung, konsequent zu Ende gedacht: kein Schritt-Status wird gepflegt.
+// „fertig" = das Ergebnis-Artefakt des Schritts liegt auf der Platte. „laeuft" = sein
+// Artefakt wurde gerade eben geschrieben (frisch) ODER das Schritt-Log sagt „start".
+// „wartet" = ein Gate, dessen Vorgänger fertig ist, aber die Freigabe fehlt.
+// „rot" = das Log behauptet „done", aber kein Artefakt liegt da — die Lüge wird ertappt.
+function globNeueste(dir, muster) {
+  const teile = String(muster).split('/');
+  const datei = teile.pop();
+  const sub = teile.length ? path.join(dir, ...teile) : dir;
+  let eintraege;
+  try { eintraege = fs.readdirSync(sub, { withFileTypes: true }); } catch { return null; }
+  const rx = new RegExp('^' + datei.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
+  let neueste = 0, anzahl = 0;
+  for (const e of eintraege) {
+    if (!e.isFile() || !rx.test(e.name)) continue;
+    anzahl++;
+    try { const m = fs.statSync(path.join(sub, e.name)).mtimeMs; if (m > neueste) neueste = m; } catch {}
+  }
+  return anzahl ? { anzahl, neueste } : null;
+}
+function artInfo(dir, muster) {
+  const liste = Array.isArray(muster) ? muster : [muster];
+  let anzahl = 0, neueste = 0;
+  for (const m of liste) { const r = globNeueste(dir, m); if (r) { anzahl += r.anzahl; if (r.neueste > neueste) neueste = r.neueste; } }
+  return anzahl ? { anzahl, neueste } : null;
+}
+function aktiverLauf(ag) {
+  const L = ag && ag.lauf;
+  if (!L || !L.basis) return null;
+  const basis = expandHome(L.basis), zeiger = expandHome(L.zeiger || '');
+  let projekt = null;
+  if (zeiger) { const z = readSafe(zeiger); if (z) { try { projekt = JSON.parse(z).projekt; } catch {} } }
+  if (!projekt) {
+    const kinder = dirs(basis).filter(n => /^\d{3}\s/.test(n)).sort((a, b) => parseInt(b) - parseInt(a));
+    projekt = kinder[0] || null;
+  }
+  if (!projekt) return null;
+  const dir = path.join(basis, projekt);
+  return fs.existsSync(dir) ? { projekt, dir } : null;
+}
+function berechneLaufStatus(ag, alleK, kanten) {
+  const lauf = aktiverLauf(ag);
+  if (!lauf) return { lauf: null, status: {} };
+  const LIVE = 120000, now = Date.now();
+  const art = {};
+  for (const k of alleK) if (k.artefakt) art[k.id] = artInfo(lauf.dir, k.artefakt);
+  const hat = id => !!(art[id] && art[id].anzahl > 0);
+  const frisch = id => !!(art[id] && (now - art[id].neueste) < LIVE);
+  const nachf = {}, vorg = {};
+  for (const e of kanten) if (e.typ === 'haupt') { (nachf[e.von] ||= []).push(e.nach); (vorg[e.nach] ||= []).push(e.von); }
+  let log = {};
+  try {
+    const raw = fs.readFileSync(path.join(lauf.dir, '_run', 'log.jsonl'), 'utf8');
+    for (const line of raw.split('\n')) { if (!line.trim()) continue; try { const ev = JSON.parse(line); log[ev.node] = ev.phase; } catch {} }
+  } catch {}
+  const status = {};
+  for (const k of alleK) {
+    if (!k.artefakt) continue;
+    const id = k.id;
+    if (k.typ === 'gate') {
+      if (hat(id) || (nachf[id] || []).some(hat)) status[id] = 'fertig';
+      else if ((vorg[id] || []).some(hat)) status[id] = 'wartet';
+      else status[id] = 'offen';
+    } else if (hat(id)) {
+      status[id] = (k.typ !== 'trigger' && frisch(id) && !(nachf[id] || []).some(hat)) ? 'laeuft' : 'fertig';
+    } else if (log[id] === 'done') {
+      status[id] = 'rot';
+    } else if (log[id] === 'start') {
+      status[id] = 'laeuft';
+    } else {
+      status[id] = 'offen';
+    }
+  }
+  // Reset-to (Rewind): bewusst auf einen Schritt zurückgesetzt (Mensch-Entscheid) — dieser
+  // Schritt + alles danach gilt als offen/wartend, egal welche Artefakte noch rumliegen.
+  try {
+    const rt = JSON.parse(fs.readFileSync(path.join(lauf.dir, '_run', 'reset_to.json'), 'utf8'));
+    if (rt && rt.node) {
+      const ab = new Set(); const stack = [rt.node];
+      while (stack.length) { const n = stack.pop(); for (const m of (nachf[n] || [])) if (!ab.has(m)) { ab.add(m); stack.push(m); } }
+      for (const id of ab) if (status[id] !== undefined) status[id] = 'offen';
+      const rn = alleK.find(k => k.id === rt.node);
+      if (rn) status[rt.node] = (rn.typ === 'gate') ? 'wartet' : 'laeuft';
+    }
+  } catch {}
+  // Skill-Status (wissen): abgeleitet vom Agenten, der ihn liest (liest-Kante).
+  for (const k of alleK) {
+    if (k.typ !== 'wissen') continue;
+    const e = kanten.find(x => x.typ === 'liest' && x.von === k.id);
+    if (e && status[e.nach]) status[k.id] = status[e.nach];
+  }
+  // Tool-/Dienst-Status: abgeleitet vom Agenten, der ihn per `nutzt` anruft — grün wenn
+  // der Anruf sauber durchlief (Agent fertig), coral während er läuft, rot bei Fehler.
+  // So sieht Gaylord, ob ElevenLabs/Kling/verify-timing wirklich sauber connected war.
+  const rang = { fehler: 5, rot: 5, laeuft: 3, wartet: 2, fertig: 1, offen: 0 };
+  for (const k of alleK) {
+    if (k.typ !== 'tool') continue;
+    const zust = kanten.filter(x => x.typ === 'nutzt' && x.nach === k.id).map(x => status[x.von]).filter(Boolean);
+    if (zust.length) status[k.id] = zust.sort((a, b) => (rang[b] || 0) - (rang[a] || 0))[0];
+  }
+  // ── Alarm: Fehler-Marker (_run/errors.jsonl) → betroffene Knoten rot + Alarmglocke ──
+  // Wahrheit aus Datei: Kling-Reject, keine Credits, ElevenLabs-401, übersprungener Schritt.
+  const alarm = [];
+  try {
+    const raw = fs.readFileSync(path.join(lauf.dir, '_run', 'errors.jsonl'), 'utf8');
+    for (const line of raw.split('\n')) {
+      if (!line.trim()) continue;
+      try { const ev = JSON.parse(line); alarm.push(ev); if (ev.node) status[ev.node] = 'fehler'; if (ev.tool) status[ev.tool] = 'fehler'; } catch {}
+    }
+  } catch {}
+  for (const [id, s] of Object.entries(status)) if (s === 'rot') alarm.push({ node: id, kind: 'übersprungen', message: `„${id}" meldet fertig, aber kein Artefakt liegt vor.` });
+  return { lauf: lauf.projekt, status, alarm };
+}
+
 function buildAgentikGraph(projektName, swId, wfName, ebene) {
   const warnungen = [];
   const projekte = readProjekte(warnungen);
@@ -208,12 +327,14 @@ function buildAgentikGraph(projektName, swId, wfName, ebene) {
   const nameVon = id => { const n = alleK.find(x => x.id === id); return n ? n.name : id; };
   const typVon = id => (alleK.find(x => x.id === id) || {}).typ;
   const SUB = { trigger: 'Start', agent: 'KI entscheidet', wissen: 'Software Skill', datenbank: 'Speicher', gate: 'Homo Sapiens am Kochen', tool: 'Tool' };
+  const { lauf: laufName, status: laufStatus, alarm: laufAlarm } = berechneLaufStatus(ag, alleK, kanten);
   const knoten = alleK.map(k => {
     const out = {
       ...k, projekt: proj.name,
       sub: k.sub || SUB[k.typ] || k.typ,
       datei: ag.datei, mtime: ag.mtime,
     };
+    if (laufStatus[k.id]) out.status = laufStatus[k.id];
     // Konzept-Baustein: als geplant markiert (`geplant: true`) = im Code noch NICHT
     // gebaut, nur gezeichnet. Rendert gestrichelt/blass wie ein Workflow-Geist —
     // damit die Karte ehrlich zwischen „läuft schon" und „nur Idee" trennt.
@@ -237,6 +358,8 @@ function buildAgentikGraph(projektName, swId, wfName, ebene) {
   const geplantN = alleK.filter(k => k.geplant).length;
   return {
     agentik: true,
+    lauf: laufName,
+    alarm: laufAlarm,
     agentikWfs: wfs.map(w => w.name),
     aktivWf: awf.name,
     ebenen: experiment ? {
@@ -249,6 +372,7 @@ function buildAgentikGraph(projektName, swId, wfName, ebene) {
       beschreibung: awf.beschreibung || ag.beschreibung || '',
       tags: [
         `Innenleben · ${awf.name}`,
+        ...(laufName ? [`Lauf: ${laufName}`] : []),
         ...(ideeAktiv ? [`Idee-Ebene — ersetzt: ${[...ersetztIds].map(origName).join(', ')}`] : []),
         ...(ag.stand ? [ag.stand] : []),
       ],
@@ -667,6 +791,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => { // nur Loopback — lokal heisst lokal
-  console.log(`AWMS laeuft: http://localhost:${PORT}`);
+  console.log(`LKAP laeuft: http://localhost:${PORT}`);
   console.log('Registrierte Projekte stehen in projekte.json; Reload liest alles frisch.');
 });

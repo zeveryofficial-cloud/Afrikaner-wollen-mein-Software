@@ -219,7 +219,7 @@
   let graphAnsicht = null; // View-Handle des aktuell gezeichneten Graphen
 
   async function zeichne(erste) {
-    const h = location.hash.replace(/^#\/?/, '') || 'uebersicht';
+    const h = location.hash.replace(/^#\/?/, '') || 's/leichtkraut/leichtkraut-ads';
     const [seite, ...rest] = h.split('/');
 
     // Alte Entwurf-Routen: Entwurf ist jetzt ein Zustand in der Workflows-Liste.

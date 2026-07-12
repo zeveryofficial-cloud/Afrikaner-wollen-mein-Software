@@ -228,7 +228,9 @@ window.AWMS = (function () {
       const geteilte = NODES.filter(n => n.typ === 'tool' && !inHaupt.has(n.id));
       for (const t of geteilte) {
         for (const k of EDGES.filter(e => e.typ === 'nutzt' && e.nach === t.id)) {
-          const klon = { ...t, id: t.id + '§' + k.von, obenTool: true, anker: k.von };
+          const ank = NODES.find(n => n.id === k.von);
+          const klon = { ...t, id: t.id + '§' + k.von, obenTool: true, anker: k.von,
+            status: t.status === 'fehler' ? 'fehler' : ((ank && ank.status) || t.status) };
           NODES.push(klon);
           EDGES.push({ von: k.von, nach: klon.id, typ: 'prompt' });
           EDGES.push({ von: klon.id, nach: k.von, typ: 'antwort' });
@@ -422,7 +424,7 @@ window.AWMS = (function () {
         (n.typ === 'tool' ? ' tool' : '') + (dienst ? ' dienst' : '') + (n.typ === 'software' ? ' software' : '') +
         (n.typ === 'agent' ? ' agent' : '') + (n.typ === 'wissen' ? ' wissen' : '') +
         (n.typ === 'datenbank' ? ' db' + (n.art === 'vektor' ? ' vektor' : '') : '') +
-        (n.typ === 'workflow' ? ' wf' : '') + (n.geist ? ' geist' : '');
+        (n.typ === 'workflow' ? ' wf' : '') + (n.geist ? ' geist' : '') + (n.status ? ' st-' + n.status : '');
       el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; el.dataset.id = n.id;
       const icon = (n.typ === 'datenbank' && n.art === 'vektor') ? LOGO.vektor
         : dienst ? LOGO.dienst : (LOGO[n.typ] || LOGO.skill);
@@ -633,14 +635,20 @@ window.AWMS = (function () {
     vp.addEventListener('wheel', e => {
       e.preventDefault();
       bewegt = true;
-      const f = e.deltaY < 0 ? 1.08 : 1 / 1.08;
       const r = vp.getBoundingClientRect();
       const px = e.clientX - r.left, py = e.clientY - r.top;
-      // erst clampen, dann den EFFEKTIVEN Faktor anwenden — sonst driftet der Graph an der Zoom-Grenze
-      const ns = Math.max(.25, Math.min(2, sc * f));
-      const gf = ns / sc;
-      tx = px - (px - tx) * gf; ty = py - (py - ty) * gf;
-      sc = ns; apply();
+      // MacBook-Trackpad: Pinch kommt als wheel+ctrlKey → stufenlos zoomen, zeigerzentriert.
+      // Zwei-Finger-Wisch (ohne ctrl) → pannen. (Maus: Cmd/Ctrl+Wheel zoomt; +/−-Knöpfe bleiben.)
+      if (e.ctrlKey || e.metaKey) {
+        const f = Math.exp(-e.deltaY * 0.0022); // stufenlos statt fester Sprünge → butterweich
+        const ns = Math.max(.25, Math.min(2, sc * f));
+        const gf = ns / sc;
+        tx = px - (px - tx) * gf; ty = py - (py - ty) * gf;
+        sc = ns;
+      } else {
+        tx -= e.deltaX; ty -= e.deltaY;
+      }
+      apply();
     }, { passive: false });
     // overflow:hidden ist per JS trotzdem scrollbar (z.B. scrollIntoView bei Fokus) — nie zulassen,
     // sonst verschiebt sich der Canvas unsichtbar gegen die transform-Koordinaten.
@@ -686,10 +694,26 @@ window.AWMS = (function () {
       fit();
     }
 
+    if (g.alarm && g.alarm.length) zeigAlarm(content, g.alarm);
     if (g.warnungen && g.warnungen.length) {
       zeigFehler(content, 'Warnung beim Lesen der Dateien', g.warnungen.join(' · '), true);
     }
     return { getView: () => ({ tx, ty, sc, bewegt }) };
+  }
+
+  // ALARM: rote pochende Glocke + lila Alarmkreis + fliegendes Einhorn 🦄 — wenn etwas
+  // fehlschlägt (Kling-Reject/keine Credits, ElevenLabs-401, übersprungener Schritt).
+  function zeigAlarm(content, alarm) {
+    content.querySelectorAll('.lkalarm').forEach(x => x.remove());
+    const el = document.createElement('div');
+    el.className = 'lkalarm';
+    const liste = alarm.slice(0, 5).map(a =>
+      `<div class="lkalarm-item">⚠️ <b>${esc(a.kind || 'Fehler')}</b>${a.node ? ` · ${esc(a.node)}` : ''}${a.message ? ` — ${esc(a.message)}` : ''}</div>`).join('');
+    el.innerHTML =
+      `<div class="lkalarm-uni">🦄</div>` +
+      `<div class="lkalarm-glocke"><div class="lkalarm-ring"></div><span>🔔</span></div>` +
+      `<div class="lkalarm-box"><b>ALARM — irgendwas stimmt nicht (${alarm.length})</b>${liste}</div>`;
+    content.appendChild(el);
   }
 
   function zeigFehler(content, titel, text, warn) {

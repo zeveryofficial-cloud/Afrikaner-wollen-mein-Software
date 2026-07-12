@@ -4,7 +4,7 @@
   --bg:#f5f5f5; --dot:#999999; --node-bg:#ffffff; --node-bd:rgba(0,0,0,0.10);
   --ink:#262626; --mut:#737373; --line:#e5e5e5;
   --wire:#cacaca; --wire-h:#6f6f6f;
-  --brand:#ff6900; --coral:#ff6d5a; --pink:#ea4b71; --purple:#7f22fe; --blau:#1971c2;
+  --brand:#2f9e44; --coral:#ff6d5a; --pink:#ea4b71; --purple:#7f22fe; --blau:#1971c2;
   --ok:#00a63e; --err:#e7000b; --gold:#b57617; --gruen:#1F7A5A;
   --font:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
 }
@@ -15,12 +15,12 @@ svg{flex:none}
 /* ── Seitenleiste (Entwurf A) ── */
 #sb{width:240px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:45}
 #sb .logo{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
-#sb .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+#sb .mark{width:28px;height:28px;border-radius:8px;background:#e9f5ec;display:grid;place-items:center;font-size:16px;line-height:1}
 #sb .logo b{font-size:14px;font-weight:600}
 #sb nav{padding:10px 8px;display:flex;flex-direction:column;gap:2px}
 .nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;font-size:13.5px;color:var(--ink);cursor:pointer;text-decoration:none}
 .nv:hover{background:#f5f5f5}
-.nv.on{background:#f0f0f0;font-weight:600}
+.nv.on{background:#e9f5ec;font-weight:600;color:#1b7a3d}
 .nv .nvic{display:grid;place-items:center}
 .nv .nvic svg{width:17px;height:17px}
 .nv .zahl{margin-left:auto;font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:9px;padding:1px 7px;background:#fff}
@@ -266,3 +266,39 @@ svg{flex:none}
 /* Fehler-/Warnhinweis (z.B. Workflow-JSON kaputt) */
 .fehlkarte{position:absolute;top:96px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid var(--err);border-radius:8px;padding:14px 18px;font-size:13.5px;max-width:560px;z-index:50}
 .fehlkarte b{color:var(--err)}
+
+/* ── Lauf-Status (LKAP M2): live aus Artefakten · grün=fertig · coral=läuft · gold=Gate wartet · rot=behauptet-nicht-belegt ── */
+.node.st-offen{opacity:.5}
+.node.st-fertig{border-color:var(--ok);border-width:2px}
+.node.st-fertig::after{content:"✓";position:absolute;right:-6px;bottom:-6px;width:18px;height:18px;border-radius:50%;
+  background:var(--ok);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;z-index:4}
+.node.st-laeuft{border-color:var(--coral);border-width:2px}
+.node.st-wartet{border-color:var(--gold);border-width:2px}
+.node.st-laeuft::before,.node.st-wartet::before{content:"";position:absolute;inset:-3px;border-radius:inherit;
+  border:2px solid var(--coral);animation:lkpuls 1.5s ease-out infinite;pointer-events:none}
+.node.st-wartet::before{border-color:var(--gold)}
+.node.st-rot{border-color:var(--err);border-width:2px}
+.node.st-rot::after{content:"!";position:absolute;right:-6px;bottom:-6px;width:18px;height:18px;border-radius:50%;
+  background:var(--err);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;z-index:4}
+@keyframes lkpuls{0%{opacity:.7;transform:scale(1)}70%{opacity:0;transform:scale(1.13)}100%{opacity:0;transform:scale(1.13)}}
+
+/* Fehler-Zustand (Tool/Skill/Schritt): roter Rand + Puls + Ausrufezeichen */
+.node.st-fehler{border-color:var(--err);border-width:2px}
+.node.st-fehler::before{content:"";position:absolute;inset:-3px;border-radius:inherit;border:2px solid var(--err);animation:lkpuls 1s ease-out infinite;pointer-events:none}
+.node.st-fehler::after{content:"!";position:absolute;right:-6px;bottom:-6px;width:18px;height:18px;border-radius:50%;background:var(--err);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;z-index:4}
+
+/* ── ALARM: rote pochende Glocke + lila Alarmkreis + fliegendes Einhorn 🦄 ── */
+.lkalarm{position:absolute;top:70px;left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:14px;
+  background:#fff;border:2px solid var(--err);border-radius:12px;padding:12px 18px 12px 16px;max-width:660px;
+  box-shadow:0 10px 34px rgba(231,0,11,.28);animation:lkalarmpop .3s ease-out}
+.lkalarm-glocke{position:relative;width:40px;height:40px;display:grid;place-items:center;flex:none}
+.lkalarm-glocke span{font-size:28px;animation:lkbell .55s ease-in-out infinite;filter:drop-shadow(0 0 5px rgba(231,0,11,.7))}
+.lkalarm-ring{position:absolute;inset:-2px;border-radius:50%;border:3px solid var(--purple);animation:lkring 1.1s ease-out infinite}
+.lkalarm-box b{display:block;color:var(--err);font-size:13px;font-weight:800;margin-bottom:3px}
+.lkalarm-item{font-size:11.5px;color:#6e1414;line-height:1.45}
+.lkalarm-item b{display:inline;color:#6e1414;font-size:11.5px;margin:0;font-weight:700}
+.lkalarm-uni{position:absolute;top:-16px;left:0;font-size:26px;pointer-events:none;animation:lkfly 6s linear infinite}
+@keyframes lkbell{0%,100%{transform:rotate(-13deg)}50%{transform:rotate(13deg)}}
+@keyframes lkring{0%{transform:scale(.65);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+@keyframes lkfly{0%{left:-30px;transform:translateY(0) rotate(-8deg) scaleX(1)}24%{transform:translateY(-14px) rotate(8deg) scaleX(1)}49%{left:100%;transform:translateY(0) rotate(-8deg) scaleX(1)}50%{transform:translateY(0) rotate(-8deg) scaleX(-1)}74%{transform:translateY(-14px) rotate(8deg) scaleX(-1)}100%{left:-30px;transform:translateY(0) rotate(-8deg) scaleX(-1)}}
+@keyframes lkalarmpop{0%{transform:translateX(-50%) scale(.9);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}

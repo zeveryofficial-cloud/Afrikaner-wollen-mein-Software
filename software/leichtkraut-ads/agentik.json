@@ -1,0 +1,84 @@
+{
+  "name": "Leichtkraut Ads-Agent",
+  "beschreibung": "Der halb-autonome Ad-Production-Agent: FORMAT × STYLE × SCRIPT → getimte, selbst-verifizierte 9:16-Ad. Diese Karte zeigt sein Innenleben — wo die KI entscheidet, welches Wissen sie liest, welche Tools sie anruft, wo Mensch-Gates sitzen. Jeder Schritt trägt ein 'artefakt' — den Datei-Beweis, aus dem LKAP seinen Live-Status berechnet (nicht behauptet).",
+  "stand": "LKAP M2: Status wird live aus den echten Artefakten des Laufs berechnet (grün=fertig · coral=läuft · gold=Gate wartet · rot=behauptet-nicht-belegt).",
+  "lauf": {
+    "basis": "$HOME/Desktop/VIKTOR AGENT CHINESE SMART Kopie/brands/LEI - Leichtkraut",
+    "zeiger": "$HOME/Desktop/VIKTOR AGENT CHINESE SMART Kopie/_LKAP_run.json"
+  },
+  "workflows": [
+    {
+      "name": "Cartoon-Ad (CC)",
+      "beschreibung": "Dialog-getriebene Cartoon-Ad. Reset → Script → Voice → VO-Analyse → Timing-Contract → Frames → Clips → Assemble → Verify → Übergabe. Drei Mensch-Gates: Stimme, Concept, Clip-Preview.",
+      "knoten": [
+        { "id": "reset", "typ": "trigger", "name": "Reset", "beschreibung": "„Resette dein Brain\" — alte Ad abwerfen, Skills/Learnings behalten, frischen Lauf starten. Leert die alte Kette.", "nutzung": "im Chat: „resette dich\"", "artefakt": ["_run/started.json", "script.md"] },
+
+        { "id": "voice-design", "typ": "agent", "name": "Voice-Design", "sub": "ElevenLabs", "beschreibung": "3–5 Stimm-Optionen auf den Hook (Susi = LEI-Standard).", "artefakt": ["voiceovers/_voice-design.md", "voiceovers/*.mp3"] },
+        { "id": "gate-voice", "typ": "gate", "name": "Stimme", "beschreibung": "Du wählst die Stimme. Permanentes Gate — die Stimme wird nie gelockt, pro Ad neu getestet.", "nutzung": "im Chat: „Stimme X\"", "artefakt": ["voiceovers/*.mp3", "voiceovers/_voice_picked.json"] },
+
+        { "id": "vo-analyse", "typ": "agent", "name": "VO-Analyse", "sub": "faster-whisper", "beschreibung": "Wort-Timestamps + Content-Cluster-JSON (Step 3.5). Auto-Cascade nach VO-Drop.", "artefakt": ["voiceovers/analysis/*.json"] },
+        { "id": "timing-contract", "typ": "agent", "name": "Timing-Contract", "sub": "verify-timing", "beschreibung": "SOLL als Daten festschreiben — die Timing-Wahrheit des Laufs.", "artefakt": ["_timing_contract.json", "_coverage.md", "_masterplan.md"] },
+        { "id": "gate-concept", "typ": "gate", "name": "Concept", "beschreibung": "Du wählst je 1 von 3 Concepts (Hook / Body01 / Body02).", "nutzung": "im Chat: „Concept A/B/C\"", "artefakt": ["_concept_picked.json"] },
+
+        { "id": "frame-gen", "typ": "agent", "name": "Frame-Gen", "sub": "Nano-Banana Pro", "beschreibung": "Alle Frames erzeugen + volle Auto-QA. Gate A (lint) stoppt kaputte Pläne.", "artefakt": ["content frames/*.png"] },
+        { "id": "clip-gen", "typ": "agent", "name": "Clip-Gen", "sub": "Kling v3", "beschreibung": "Start→End-Paar-Chains, stumm, parallel-submit. Gate B (clips) misst jeden Clip vor Assembly.", "artefakt": ["clips/*.mp4"] },
+        { "id": "gate-clip", "typ": "gate", "name": "Clip-Preview", "beschreibung": "Du prüfst Hook A + Body01 + Body02 als EINEN kombinierten Clip.", "nutzung": "im Chat: „passt / ändere …\"", "artefakt": ["_clip_preview_ok.json"] },
+
+        { "id": "assemble", "typ": "agent", "name": "Assemble", "sub": "ffmpeg", "beschreibung": "Audio-first concat + mux (716×1284, 24fps, crf19).", "artefakt": ["final/*.mp4"] },
+        { "id": "verify", "typ": "agent", "name": "Verify + /watch", "sub": "verify-timing", "beschreibung": "Gate C (Timing-Wahrheit, gemessen) + /watch Fakten-Check gegen den Plan (nur Fakten — nie Timing, nie Geschmack).", "artefakt": ["_verify_report.json", "_coverage.md"] },
+        { "id": "uebergabe", "typ": "gate", "name": "Übergabe", "beschreibung": "Ad fertig & verifiziert — Übergabe an den Editor (CapCut). BGM nur auf Wunsch.", "nutzung": "im Chat: „fertig / BGM drauf\"", "artefakt": ["final/*.mp4"] },
+
+        { "id": "sk-reset", "typ": "wissen", "name": "post-ad-reset", "beschreibung": "Vorherige Ad-Spezifika abwerfen, Skills/Learnings behalten." },
+        { "id": "sk-voanalyse", "typ": "wissen", "name": "voice-over-analysis", "beschreibung": "Identifikation/Umbenennung + Content-Cluster-Analyse der VOs." },
+        { "id": "sk-objtiming", "typ": "wissen", "name": "objective-timing", "beschreibung": "Das Timing-Gesetz: SOLL/IST als Zahlen, contract→lint→clips→verify→smoke." },
+        { "id": "sk-cc-frames", "typ": "wissen", "name": "cc-generate-content-frames", "beschreibung": "Wie CC-Frames konzipiert & geprompted werden." },
+        { "id": "sk-cc-animate", "typ": "wissen", "name": "cc-animate-content-frames", "beschreibung": "Wie CC-Frames zu Kling-Clips animiert werden." },
+        { "id": "sk-coverage", "typ": "wissen", "name": "coverage-audit-and-reconcile", "beschreibung": "Jedes Script-Element → Quelle (NEW/LIB/GAP) vor jedem „fertig\"." },
+        { "id": "sk-watch", "typ": "wissen", "name": "watch-factcheck", "beschreibung": "Die fertige Ad per /watch gegen den Plan fakten-checken." },
+
+        { "id": "t-eleven", "typ": "tool", "name": "ElevenLabs API" },
+        { "id": "t-nano", "typ": "tool", "name": "Nano-Banana Pro" },
+        { "id": "t-kling", "typ": "tool", "name": "Kling CLI" },
+        { "id": "t-verify", "typ": "tool", "name": "verify-timing" },
+        { "id": "t-ffmpeg", "typ": "tool", "name": "ffmpeg" },
+
+        { "id": "db-library", "typ": "datenbank", "name": "Clip-Library", "sub": "86 Clips", "beschreibung": "Wiederverwendbare LEI×Pixar-B-Roll-Clips — vor jeder Generierung prüfen (0 Credits)." },
+        { "id": "db-memory", "typ": "datenbank", "name": "Memory", "beschreibung": "Learnings & Feedback, die Frames/Prompts steuern und nach jedem Lauf wachsen." },
+        { "id": "db-final", "typ": "datenbank", "name": "Final", "beschreibung": "Ausgelieferte Cuts (A/B/C) — nur der neueste Stand." }
+      ],
+      "kanten": [
+        { "von": "reset", "nach": "voice-design", "typ": "haupt" },
+        { "von": "voice-design", "nach": "gate-voice", "typ": "haupt" },
+        { "von": "gate-voice", "nach": "vo-analyse", "typ": "haupt" },
+        { "von": "vo-analyse", "nach": "timing-contract", "typ": "haupt" },
+        { "von": "timing-contract", "nach": "gate-concept", "typ": "haupt" },
+        { "von": "gate-concept", "nach": "frame-gen", "typ": "haupt" },
+        { "von": "frame-gen", "nach": "clip-gen", "typ": "haupt" },
+        { "von": "clip-gen", "nach": "gate-clip", "typ": "haupt" },
+        { "von": "gate-clip", "nach": "assemble", "typ": "haupt" },
+        { "von": "assemble", "nach": "verify", "typ": "haupt" },
+        { "von": "verify", "nach": "uebergabe", "typ": "haupt" },
+
+        { "von": "sk-reset", "nach": "reset", "typ": "liest" },
+        { "von": "sk-voanalyse", "nach": "vo-analyse", "typ": "liest" },
+        { "von": "sk-objtiming", "nach": "timing-contract", "typ": "liest" },
+        { "von": "sk-cc-frames", "nach": "frame-gen", "typ": "liest" },
+        { "von": "sk-cc-animate", "nach": "clip-gen", "typ": "liest" },
+        { "von": "sk-coverage", "nach": "verify", "typ": "liest" },
+        { "von": "sk-watch", "nach": "verify", "typ": "liest" },
+
+        { "von": "db-memory", "nach": "frame-gen", "typ": "liest" },
+        { "von": "db-library", "nach": "clip-gen", "typ": "liest" },
+        { "von": "assemble", "nach": "db-final", "typ": "schreibt" },
+        { "von": "verify", "nach": "db-memory", "typ": "schreibt" },
+
+        { "von": "voice-design", "nach": "t-eleven", "typ": "nutzt" },
+        { "von": "frame-gen", "nach": "t-nano", "typ": "nutzt" },
+        { "von": "clip-gen", "nach": "t-kling", "typ": "nutzt" },
+        { "von": "timing-contract", "nach": "t-verify", "typ": "nutzt" },
+        { "von": "verify", "nach": "t-verify", "typ": "nutzt" },
+        { "von": "assemble", "nach": "t-ffmpeg", "typ": "nutzt" }
+      ]
+    }
+  ]
+}
