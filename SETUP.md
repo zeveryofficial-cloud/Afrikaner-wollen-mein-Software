@@ -54,4 +54,4 @@ Status-Pflegen von Hand.
 - `CLAUDE.md` · `ANLEITUNG.md` · `SCHEMA.md` — Verfassung, Einstieg, Baustein-Formate
 - `workflows/` · `datenbanken/` · `software/` · `tools/` — **leer**, warten auf dich
 
-Viel Spaß. — Viktor
+Viel Spaß. — Gaylord

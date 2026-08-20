@@ -18,12 +18,7 @@ Läuft AWMS schon, öffnet der Doppelklick nur den Browser.
 
 Das ist der ganze Ablauf. Kein Hochladen, kein Verbinden, kein Einrichten.
 
-## Zwei Extras — nur wenn du sie brauchst
-- **Konzept** = planen, bevor etwas existiert. Sag **„/entwurf ich will X automatisieren"**
-  und erzähl, wie du X bisher von Hand machst. Das Konzept erscheint unter **Workflows**
-  als Geister-Kette und malt live mit; Geister werden fest, sobald sie gebaut sind.
-  Reine Konzepte (noch nichts gebaut) kannst du in der Liste per Papierkorb löschen —
-  alles andere löschst du im Chat.
+## Ein Extra — nur wenn du es brauchst
 - **Befund** = der Arztbrief, einmal pro Woche anschauen. 🔴 kaputt · 🟡 auffällig
   (Datenbank ohne Leser, doppelte Skills) · ⚪ lose Enden. Fixen lässt du im Chat.
 

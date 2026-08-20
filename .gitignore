@@ -1,2 +1,23 @@
 .DS_Store
 node_modules/
+.venv/
+__pycache__/
+
+# Schlüssel — NIEMALS committen. Einmal drin = für immer in der Historie.
+.env
+.env.*
+*.key
+*.pem
+
+# Maschinen-lokale Claude-Einstellungen — gehören niemandem sonst
+.claude/settings.local.json
+
+# Lager: Medien bleiben lokal, das Repo trägt den Bauplan.
+# (GitHub nimmt ohnehin nichts über 100 MB an.)
+*.mp4
+*.mov
+*.webm
+*.wav
+*.mp3
+*.m4a
+*.zip

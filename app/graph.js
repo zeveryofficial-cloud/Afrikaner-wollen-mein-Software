@@ -4,7 +4,7 @@
 'use strict';
 window.AWMS = (function () {
 
-  // ── Ein Logo pro Baustein-Typ (Viktors Entscheidung: alles Gleiche sieht gleich aus) ──
+  // ── Ein Logo pro Baustein-Typ (Gaylords Entscheidung: alles Gleiche sieht gleich aus) ──
   const LOGO = {
     // Skill: Doppel-Funke (standardisierte KI-Prozedur) — rosa
     skill: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M11 4.5C11.72 8.2 14.3 10.78 18 11.5c-3.7.72-6.28 3.3-7 7-.72-3.7-3.3-6.28-7-7 3.7-.72 6.28-3.3 7-7Z"/><path d="M18.5 14.5c.35 1.85 1.65 3.15 3.5 3.5-1.85.35-3.15 1.65-3.5 3.5-.35-1.85-1.65-3.15-3.5-3.5 1.85-.35 3.15-1.65 3.5-3.5Z" stroke-width="1.4"/></svg>',
@@ -16,6 +16,10 @@ window.AWMS = (function () {
     datenbank: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5V18c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5.5"/><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg>',
     // Vektor-Datenbank: Zylinder mit Embedding-Konstellation — gleiche Lila-Familie, eigener Look
     vektor: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="7" ry="2.4"/><path d="M5 5v13.4c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4V5"/><path d="M9.1 11.6 15 10.5M9.1 11.6l3.1 4.3M15 10.5l-2.8 5.4" stroke-width="1.1"/><circle cx="9.1" cy="11.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="10.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.2" cy="15.9" r="1.2" fill="currentColor" stroke="none"/></svg>',
+    // Wiki-Datenbank: Zylinder mit Artikel-Zeilen + Backlink-Punkt — gleiche Lila-Familie, eigener Look
+    wiki: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="7" ry="2.4"/><path d="M5 5v13.4c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4V5"/><path d="M8.4 10.6h7.2M8.4 13.5h3.6M8.4 16.4h5.2" stroke-width="1.1"/><circle cx="15.2" cy="13.5" r="1.2" fill="currentColor" stroke="none"/><path d="M12 13.5h2" stroke-width="1.1"/></svg>',
+    // CSV-Datenbank: Zylinder mit Tabellen-Gitter (Spalten × Zeilen) — gleiche Lila-Familie, eigener Look
+    csv: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="7" ry="2.4"/><path d="M5 5v13.4c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4V5"/><path d="M8.3 11h7.4M8.3 14.2h7.4M10.75 8.8v7.6M13.75 8.8v7.6" stroke-width="1.1"/></svg>',
     // Workflow: zwei verkettete Knoten — orange
     workflow: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3.5" width="7" height="7" rx="2"/><rect x="14" y="13.5" width="7" height="7" rx="2"/><path d="M10 7h4.5a3 3 0 0 1 3 3v3.5"/></svg>',
     // KI-Agent (Agentik-Karte): Chip mit Funke — KI, die IM Code einer Software entscheidet
@@ -28,14 +32,18 @@ window.AWMS = (function () {
     dienst: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M9 2v5M15 2v5M6.5 7h11v3.2a5.5 5.5 0 0 1-11 0V7ZM12 15.7V22"/></svg>',
     // Trigger: Blitz
     trigger: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
-    // Übersicht (nur Seitenleiste): Netz aus drei Knoten
-    uebersicht: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><path d="M10.9 6.9 6.2 16.9M13.1 6.9l4.7 10M7.2 19h9.6"/></svg>',
+    // Agent (die Rolle): gefaltete Kette — Gaylords Protein-Bild (Bausteine = Aminosäuren,
+    // Workflows = Ketten, Agenten = gefaltete Proteine). Drei Glieder, zum Ring gefaltet.
+    agenten: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="8.6" y="2.6" width="6.8" height="6.8" rx="2.2"/><rect x="2.7" y="14" width="6.8" height="6.8" rx="2.2"/><rect x="14.5" y="14" width="6.8" height="6.8" rx="2.2"/><path d="M8.6 6.9c-2.9.7-4.4 3.1-4 7.1M15.4 6.9c2.9.7 4.4 3.1 4 7.1M9.5 17.4h5"/></svg>',
+    nutzung: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4.5 20.5h15"/><path d="M7.5 20.5v-5.5M12 20.5V9M16.5 20.5V12.5"/><path d="M5.5 6.5l4 -2.5 3.5 2 5-3.5"/></svg>',
     // Entwurf (Seitenleiste): gestrichelter Rahmen + Funke — der Bauplan
     entwurf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="3.5" width="17" height="17" rx="4" stroke-dasharray="3.4 3"/><path d="M12 7.8c.55 2.3 1.85 3.6 4.2 4.2-2.35.6-3.65 1.9-4.2 4.2-.55-2.3-1.85-3.6-4.2-4.2 2.35-.6 3.65-1.9 4.2-4.2Z" stroke-linejoin="round"/></svg>',
     // Befund (Seitenleiste): Puls-Linie — der Arztbrief zum Röntgenbild
     befund: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 12h4l2.2-5.5 4.4 11L16 12h5"/></svg>',
+    // Einstellungen (Seitenleiste + Karten): Zahnrad mit runden Zähnen — das Werkzeug hinter AWMS
+    einstellungen: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
   };
-  const TYP_LABEL = { trigger: 'Trigger', skill: 'Skill', tool: 'Tool', software: 'Software — Mensch bedient', datenbank: 'Datenbank', gate: 'Homo Sapiens — am Kochen', workflow: 'Workflow', agent: 'KI-Agent — entscheidet in der Software', wissen: 'Software Skill — die MD-Datei, die die Software-KI liest' };
+  const TYP_LABEL = { trigger: 'Trigger', skill: 'Skill', tool: 'Tool', software: 'Software — Mensch bedient', datenbank: 'Datenbank', gate: 'Homo Sapiens — am Kochen', workflow: 'Workflow', agent: 'KI-Node', wissen: 'Software Skill — die MD-Datei, die die Software-KI liest' };
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const wann = iso => { try { return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso)) + ' Uhr'; } catch { return '—'; } };
@@ -45,9 +53,8 @@ window.AWMS = (function () {
   let aktiverDots = null; // Punkte-Canvas des aktuellen Graphen bei Resize nachziehen
   window.addEventListener('resize', () => { if (aktiverFit) aktiverFit(); if (aktiverDots) aktiverDots(); });
 
-  // Wohin Viktor einen „Später"-Zettel geschoben hat — reine Optik, lebt nur im Browser
-  // (wie Zoom & Blickwinkel), nie in den Dateien. Überlebt die Live-Neuzeichnung.
-  const NOTIZ_POS = {};
+  // Eingeklappte Daten-Ebene je Graph — ebenfalls reine Optik, lebt nur im Browser.
+  const EBENE_ZU = {};
 
   // ── Haupt-Renderer ────────────────────────────────────────────────────────────
   function renderGraph(content, g, opts = {}) {
@@ -65,26 +72,19 @@ window.AWMS = (function () {
       ? `<div class="wf-name">Übersicht <span class="tag">alle Workflows · verbunden über Datenbanken</span></div>`
       : (() => {
           const w = g.workflow;
-          const spaeter = w.spaeterZahl || 0;
-          const aktiv = (w.geister || 0) - spaeter; // offene Geister ohne die bewusst zurückgestellten
+          const aktiv = w.geister || 0;
           // Agentik-Karte ist LAUFENDE Software, kein Von-0-Entwurf: geplante Knoten
           // heißen „geplant", nicht „Entwurf" — sonst wirkt gebaute Software wie eine Skizze.
-          const zustand = g.agentik
-            ? (aktiv > 0
-                ? ` <span class="tag entwurf">◐ ${w.bausteine - w.geister} von ${w.bausteine} Bausteinen gebaut · ${aktiv} geplant</span>`
-                : ` <span class="tag">${esc(w.datei)}</span>`)
-            : aktiv > 0
-              ? ` <span class="tag entwurf">◐ Entwurf · ${w.bausteine - w.geister} von ${w.bausteine - spaeter} Bausteinen stehen${spaeter ? ` · ${spaeter} später` : ''}</span>`
-              : spaeter > 0
-                ? ` <span class="tag spaeter">✓ fertig für jetzt · ${spaeter} später</span>`
-                : ` <span class="tag">${esc(w.datei)}</span>`;
+          const zustand = aktiv > 0
+            ? ` <span class="tag entwurf">◐ ${w.bausteine - w.geister} von ${w.bausteine} Bausteinen gebaut${g.agentik ? ` · ${aktiv} geplant` : ''}</span>`
+            : ` <span class="tag">${esc(w.datei)}</span>`;
           return `<div class="wf-name">${esc(w.name)} <span class="tag geld">${esc(w.projekt)}</span>` + zustand +
             w.tags.map(t => ` <span class="tag">${esc(t)}</span>`).join('') + '</div>';
         })();
 
     // Agentik-Karte: die Tab-Pille wechselt zwischen den internen Workflows der Software
     // (je eigener Trigger — „Cartoon-Ad anlegen ist ein anderer Trigger als B-Roll-Ad").
-    const tabs = meta ? '' : g.agentik
+    const tabs = (meta || g.agentRolle) ? '' : g.agentik
       ? (g.agentikWfs && g.agentikWfs.length > 1
           ? `<div class="tabs">${g.agentikWfs.map(w =>
               `<div class="tab${w === g.aktivWf ? ' on' : ''}" data-awf="${esc(w)}">${esc(w)}</div>`).join('')}</div>`
@@ -113,6 +113,8 @@ window.AWMS = (function () {
         </svg>
       </div></div>
       <div class="zctl">
+        ${!meta && g.knoten.some(n => n.typ === 'datenbank' || n.typ === 'wissen')
+          ? `<button class="zbtn eb" id="z-eb" title="Daten-Ebene ausblenden">${LOGO.datenbank}</button>` : ''}
         <button class="zbtn" id="z-fit" title="Einpassen">⛶</button>
         <button class="zbtn" id="z-in" title="Zoom rein">+</button>
         <button class="zbtn" id="z-out" title="Zoom raus">−</button>
@@ -147,77 +149,9 @@ window.AWMS = (function () {
     let rueckEdges = new Set(); // Rückwärts-Kanten (Kreise) — fürs Layout ausgeklammert, als Schleife gezeichnet
     let tx = 0, ty = 0, sc = 1, bewegt = false, drag = null;
 
-    // ── „Später"-Knoten stehen NICHT in der Kette ──
-    // Die Kette zeigt nur, was JETZT gilt. Bewusst zurückgestellte Zukunft (spaeter: true)
-    // wird herausgelöst und liegt als LOSER gelber Zettel auf der Fläche — verschiebbar,
-    // Klick = Zukunfts-Skizze. (Viktors Entscheid: nicht an einen Baustein kleben.)
-    const spGruppen = [];
     const notizKey = meta ? 'meta' : (g.workflow ? g.workflow.projekt + '/' + g.workflow.kurz : 'wf');
-    if (!meta) (function spaeterHerausloesen() {
-      const origById = {}; for (const n of NODES) origById[n.id] = n;
-      const spIds = new Set(NODES.filter(n => n.spaeter).map(n => n.id));
-      if (!spIds.size) return;
-      // Datenbanken, die NUR Später-Knoten bedienen, gehören mit in die Skizze.
-      for (const d of NODES) {
-        if (d.typ !== 'datenbank') continue;
-        const partner = EDGES.filter(k => k.typ !== 'haupt' && (k.von === d.id || k.nach === d.id))
-          .map(k => (k.von === d.id ? k.nach : k.von));
-        if (partner.length && partner.every(id => spIds.has(id))) spIds.add(d.id);
-      }
-      const origHaupt = EDGES.filter(k => k.typ === 'haupt');
-      // Anker = letzter Nicht-Später-Knoten VOR der Später-Strecke (sonst der danach).
-      const davor = (id, t = 0) => {
-        const rein = origHaupt.find(k => k.nach === id);
-        if (!rein || t > NODES.length) return null;
-        return spIds.has(rein.von) ? davor(rein.von, t + 1) : rein.von;
-      };
-      const danach = (id, t = 0) => {
-        const raus = origHaupt.find(k => k.von === id);
-        if (!raus || t > NODES.length) return null;
-        return spIds.has(raus.nach) ? danach(raus.nach, t + 1) : raus.nach;
-      };
-      // Gruppen je Anker-Knoten — dort klebt der Zettel, die Skizze kennt ihre Nachbarn.
-      const gruppen = {}, gruppeVon = {};
-      for (const n of NODES) {
-        if (!spIds.has(n.id) || n.typ === 'datenbank') continue;
-        const vorId = davor(n.id), nachId = danach(n.id);
-        const anker = vorId || nachId || (NODES.find(x => !spIds.has(x.id)) || {}).id;
-        if (!anker) continue;
-        const gr = (gruppen[anker] ||= {
-          knoten: [], kanten: [], vorId, nachId,
-          vorName: vorId && origById[vorId] ? origById[vorId].name : null,
-          nachName: nachId && origById[nachId] ? origById[nachId].name : null,
-        });
-        gr.knoten.push(n); gruppeVon[n.id] = gr;
-      }
-      for (const d of NODES) {
-        if (!spIds.has(d.id) || d.typ !== 'datenbank') continue;
-        const p = EDGES.find(k => (k.von === d.id && gruppeVon[k.nach]) || (k.nach === d.id && gruppeVon[k.von]));
-        const gr = p ? gruppeVon[p.von === d.id ? p.nach : p.von] : Object.values(gruppen)[0];
-        if (gr) { gr.knoten.push(d); gruppeVon[d.id] = gr; }
-      }
-      for (const k of EDGES) {
-        if (k.typ === 'haupt' || !(spIds.has(k.von) || spIds.has(k.nach))) continue;
-        const gr = gruppeVon[k.von] || gruppeVon[k.nach];
-        if (gr) gr.kanten.push(k);
-      }
-      // Haupt-Kanten überbrücken: A → später → B wird zu A → B (auch über Später-Strecken).
-      let haupt = origHaupt.slice();
-      for (const sid of spIds) {
-        const rein = haupt.filter(k => k.nach === sid);
-        const raus = haupt.filter(k => k.von === sid);
-        haupt = haupt.filter(k => k.von !== sid && k.nach !== sid);
-        for (const i of rein) for (const o of raus)
-          if (i.von !== o.nach && !haupt.some(k => k.von === i.von && k.nach === o.nach))
-            haupt.push({ von: i.von, nach: o.nach, typ: 'haupt' });
-      }
-      NODES = NODES.filter(n => !spIds.has(n.id));
-      EDGES = EDGES.filter(k => k.typ !== 'haupt' && !spIds.has(k.von) && !spIds.has(k.nach)).concat(haupt);
-      for (const [ankerId, gr] of Object.entries(gruppen))
-        spGruppen.push({ key: notizKey + ':' + ankerId, gr });
-    })();
 
-    // ── Agentik: Tool-Anrufe LOKAL zeichnen (Viktors Entscheid: „wir können zweimal
+    // ── Agentik: Tool-Anrufe LOKAL zeichnen (Gaylords Entscheid: „wir können zweimal
     // Gemini haben") ── Ein geteiltes Tool wird nicht als EIN Knoten mit Spinnennetz
     // gezeigt, sondern je Agent als eigener Anruf-Baustein direkt ÜBER ihm — mit
     // sichtbarem Hin (prompt) und Zurück (antwort). In der DATEI bleibt das Tool ein
@@ -228,7 +162,9 @@ window.AWMS = (function () {
       const geteilte = NODES.filter(n => n.typ === 'tool' && !inHaupt.has(n.id));
       for (const t of geteilte) {
         for (const k of EDGES.filter(e => e.typ === 'nutzt' && e.nach === t.id)) {
-          const klon = { ...t, id: t.id + '§' + k.von, obenTool: true, anker: k.von };
+          const ank = NODES.find(n => n.id === k.von);
+          const klon = { ...t, id: t.id + '§' + k.von, obenTool: true, anker: k.von,
+            status: t.status === 'fehler' ? 'fehler' : ((ank && ank.status) || t.status) };
           NODES.push(klon);
           EDGES.push({ von: k.von, nach: klon.id, typ: 'prompt' });
           EDGES.push({ von: klon.id, nach: k.von, typ: 'antwort' });
@@ -238,37 +174,45 @@ window.AWMS = (function () {
       EDGES = EDGES.filter(k => k.typ !== 'nutzt');
     })();
 
-    // Zukunfts-Skizze im Detail-Panel: was später käme, womit es verbunden wäre, wo es hinge.
-    function zeigeSkizze(gr) {
-      const nameVon = id => { const k = gr.knoten.find(x => x.id === id); return k ? k.name : id; };
-      const zeilen = gr.knoten.map(k => {
-        const verb = gr.kanten.map(x =>
-          x.typ === 'liest' && x.nach === k.id ? `liest aus „${nameVon(x.von)}"` :
-          x.typ === 'schreibt' && x.von === k.id ? `schreibt in „${nameVon(x.nach)}"` : null
-        ).filter(Boolean);
-        const icon = (k.typ === 'datenbank' && k.art === 'vektor') ? LOGO.vektor : (LOGO[k.typ] || LOGO.skill);
-        return `<div class="spk">${icon}<div><b>${esc(k.name)}</b><span>${esc(TYP_LABEL[k.typ] || k.typ)}${verb.length ? ' · ' + esc(verb.join(' · ')) : ''}</span>${k.beschreibung ? `<p>${esc(k.beschreibung)}</p>` : ''}</div></div>`;
-      }).join('');
-      const wo = gr.vorName && gr.nachName ? `zwischen „${gr.vorName}" und „${gr.nachName}"`
-        : gr.vorName ? `nach „${gr.vorName}"` : gr.nachName ? `vor „${gr.nachName}"` : '';
-      window.openPanel({
-        name: 'Für später geplant',
-        html: `<div class="k">Zukunfts-Skizze — bewusst zurückgestellt, kein Teil der heutigen Kette</div>${zeilen}` +
-          (wo ? `<div class="k">Käme in die Kette</div>${esc(wo)}` : '') +
-          `<div class="k">Zurückholen</div>Im Chat sagen: <code>„${esc(gr.knoten[0].name)} doch jetzt bauen"</code>`,
-      });
-    }
+    // ── Workflow-Dienste: "dienste" am Knoten → eigener Stecker-Baustein ÜBER ihm,
+    // mit Hin (prompt) und Zurück (antwort) — exakt die Agentik-Optik (Gaylords Entscheid:
+    // wie in der Software, keine Mini-Chips). Die Datei kennt nur das Feld "dienste";
+    // die Anruf-Bausteine sind reine Zeichnung, berechnet bei jedem Reload.
+    if (!g.agentik) (function dienstAnrufe() {
+      for (const n of NODES.filter(x => Array.isArray(x.dienste) && x.dienste.length)) {
+        n.dienste.forEach((d, i) => {
+          const klon = { id: n.id + '⌁' + i, typ: 'tool', name: d, sub: 'externer Dienst',
+            obenTool: true, anker: n.id, dienstKnoten: true,
+            beschreibung: `Externer Dienst: „${n.name}“ ruft ${d}.` };
+          NODES.push(klon);
+          EDGES.push({ von: n.id, nach: klon.id, typ: 'prompt' });
+          EDGES.push({ von: klon.id, nach: n.id, typ: 'antwort' });
+        });
+      }
+    })();
 
     // „unten" = liegt unterhalb der Kette und wird über liest/schreibt angebunden
     // (Datenbanken — und in Agentik-Karten die Wissens-Dateien der Software-KI).
     const unten = n => n.typ === 'datenbank' || n.typ === 'wissen';
-    const breit = n => n.typ === 'datenbank' || n.typ === 'workflow';
-    const nodeW = n => breit(n) ? 230 : n.typ === 'gate' ? 88 : 96;
-    const nodeH = n => n.typ === 'gate' ? 88 : 96;
+    // Workflow-Knoten: in der (alten) Meta-Ansicht eine breite Zeile — im Agent-Graph
+    // eine eigene lebendige Karte (wfb) mit berechneter Miniatur der echten Kette.
+    const wfKarte = n => n.typ === 'workflow' && !meta;
+    const breit = n => n.typ === 'datenbank' || (n.typ === 'workflow' && meta);
+    const nodeW = n => wfKarte(n) ? 252 : breit(n) ? 230 : n.typ === 'gate' ? 88 : 96;
+    const nodeH = n => wfKarte(n) ? 124 : n.typ === 'gate' ? 88 : 96;
     const cx = n => n.x + nodeW(n) / 2;
     const cy = n => n.y + nodeH(n) / 2;
 
     for (const n of NODES) byId[n.id] = n;
+
+    // Wer hängt an der Daten-Ebene? — für den Daten-Chip bei eingeklappter Ebene.
+    const datenVon = {};
+    for (const k of EDGES) {
+      const a = byId[k.von], b = byId[k.nach];
+      if (!a || !b) continue;
+      if (unten(a) && !unten(b)) (datenVon[b.id] ||= new Set()).add(a.name);
+      else if (unten(b) && !unten(a)) (datenVon[a.id] ||= new Set()).add(b.name);
+    }
 
     // ── Auto-Layout (verzweigungsfähig: Knoten gleicher Ebene stapeln vertikal) ──
     const CHAIN_Y = meta ? 280 : 300;
@@ -357,21 +301,65 @@ window.AWMS = (function () {
         for (const n of main) n.layer = layer[n.id] || 0;
 
         // Verzweigungen: mehrere Knoten auf derselben Ebene → vertikal um die Mitte verteilen.
+        // Breite Workflow-Karten (Agent-Graph) brauchen mehr Ebenen-Abstand, sonst überlappen sie.
+        const LX = main.some(wfKarte) ? 340 : 220;
+        const LY = main.some(wfKarte) ? 215 : 190;
         const proEbene = {};
         for (const n of main) (proEbene[n.layer] ||= []).push(n);
         for (const [eb, gruppe] of Object.entries(proEbene)) {
           gruppe.forEach((n, i) => {
-            const mitte = 160 + Number(eb) * 220 + 48;
+            const mitte = 160 + Number(eb) * LX + 48;
             n.x = mitte - nodeW(n) / 2;
-            n.y = CHAIN_Y + (i - (gruppe.length - 1) / 2) * 190 + (nodeH(n) === 88 ? 4 : 0);
+            n.y = CHAIN_Y + (i - (gruppe.length - 1) / 2) * LY + (nodeH(n) === 88 ? 4 : 0);
           });
         }
       }
-      // Anruf-Bausteine (lokale Tool-Klone) schweben direkt ÜBER ihrem Agenten.
-      for (const t of NODES.filter(n => n.obenTool)) {
-        const p = byId[t.anker];
-        if (p) { t.x = cx(p) - nodeW(t) / 2; t.y = p.y - 175; }
+      // Anruf-Bausteine (lokale Tool-Klone) schweben ÜBER ihrem Anker — mehrere am selben
+      // Anker fächern DIAGONAL auf: einer je Stufe, dazu seitlich versetzt. Flach nebeneinander
+      // geht NICHT (Befund Gaylord 31.07.2026): das
+      // Schild unter der Kachel ist 170 px breit (.lbl in style.css), die Ketten-Ebenen liegen
+      // nur 220 px auseinander — die Beschriftungen benachbarter Dienste liefen ineinander
+      // („Gemini (kiSuno (kie.ai)"). Diagonal statt senkrecht gestapelt, damit die Prompt-/
+      // Antwort-Linie zum oberen Dienst nicht durch die untere Kachel schneidet.
+      const STUFE = 170;
+      const proAnker = {};
+      for (const t of NODES.filter(n => n.obenTool)) (proAnker[t.anker] ||= []).push(t);
+      for (const [aid, ts] of Object.entries(proAnker)) {
+        const p = byId[aid];
+        if (!p) continue;
+        ts.forEach((t, i) => {
+          t.x = cx(p) - nodeW(t) / 2 + (i - (ts.length - 1) / 2) * 100;
+          t.y = p.y - 175 - i * STUFE;
+        });
       }
+      // Kollisions-Wächter: ein Dienst darf keinen Ketten-Knoten verdecken. Sitzt sein Anker
+      // in einer Verzweigung eine Zeile tiefer, landet der Dienst sonst GENAU auf dem Knoten
+      // darüber (gemessen an zwei Bausteinen derselben Ebene, 15 px Versatz — beide auf
+      // Ebene 0, weil Musik-Research keine haupt-Kante hat). Nur die Dienste weichen nach
+      // oben aus; die Kette bleibt, wo sie ist. Gerechnet wird mit dem VOLLEN Platzbedarf
+      // inklusive Schild — sonst gilt als frei, was sich in der Beschriftung überlappt.
+      (function dienstAusweichen() {
+        const innen = n => breit(n) || wfKarte(n);   // Schild sitzt IN der Kachel
+        const schildH = n => innen(n) ? 0
+          : 8 + Math.min(3, Math.ceil((n.name || '').length / 20)) * 20 + 19;
+        const feld = n => {
+          const w = innen(n) ? nodeW(n) : 170;
+          return { x1: cx(n) - w / 2, x2: cx(n) + w / 2, y1: n.y, y2: n.y + nodeH(n) + schildH(n) };
+        };
+        const stossen = (a, b) => a.x1 < b.x2 + 12 && b.x1 < a.x2 + 12
+                               && a.y1 < b.y2 + 8 && b.y1 < a.y2 + 8;
+        const fest = NODES.filter(n => !n.obenTool && !unten(n));
+        const gesetzt = [];
+        // von unten nach oben: der tiefste Dienst weicht zuerst, die darüber weichen ihm dann aus
+        for (const d of NODES.filter(n => n.obenTool).sort((a, b) => b.y - a.y || a.x - b.x)) {
+          for (let v = 0; v < 20; v++) {
+            const f = feld(d);
+            if (!fest.some(n => stossen(f, feld(n))) && !gesetzt.some(n => stossen(f, feld(n)))) break;
+            d.y -= STUFE;
+          }
+          gesetzt.push(d);
+        }
+      })();
       // Unterband: Datenbanken — je unter die Mitte ihrer Ketten-Partner, dann entzerrt.
       const maxUnten = main.length ? Math.max(...main.map(n => n.y + nodeH(n))) : CHAIN_Y;
       DB_Y = maxUnten + 180;
@@ -416,17 +404,35 @@ window.AWMS = (function () {
       const neben = EDGES.some(k => ['liest', 'schreibt'].includes(k.typ) && (k.von === n.id || k.nach === n.id));
       // In Agentik-Karten sind Tools die Zugänge der Software (Gemini API, Higgsfield CLI …)
       // — Stecker-Icon; der Schraubenschlüssel bleibt den Business-Tools der Workflows.
-      const dienst = n.typ === 'tool' && g.agentik;
+      const dienst = n.typ === 'tool' && (g.agentik || n.dienstKnoten);
       el.className = 'node' +
         (n.typ === 'trigger' ? ' trigger' : '') + (n.typ === 'gate' ? ' gate' : '') +
         (n.typ === 'tool' ? ' tool' : '') + (dienst ? ' dienst' : '') + (n.typ === 'software' ? ' software' : '') +
         (n.typ === 'agent' ? ' agent' : '') + (n.typ === 'wissen' ? ' wissen' : '') +
-        (n.typ === 'datenbank' ? ' db' + (n.art === 'vektor' ? ' vektor' : '') : '') +
-        (n.typ === 'workflow' ? ' wf' : '') + (n.geist ? ' geist' : '');
+        (n.typ === 'datenbank' ? ' db' + (n.art === 'vektor' ? ' vektor' : n.art === 'wiki' ? ' wiki' : n.art === 'csv' ? ' csv' : '') : '') +
+        (n.typ === 'workflow' ? (wfKarte(n) ? ' wfb' : ' wf') : '') + (n.geist ? ' geist' : '') + (n.status ? ' st-' + n.status : '') +
+        (n.neu ? ' neu na-' + (n.neuArt || 'neu') : '');
       el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; el.dataset.id = n.id;
-      const icon = (n.typ === 'datenbank' && n.art === 'vektor') ? LOGO.vektor
+      const icon = (n.typ === 'datenbank' && LOGO[n.art] && n.art !== 'normal') ? LOGO[n.art]
         : dienst ? LOGO.dienst : (LOGO[n.typ] || LOGO.skill);
-      if (breit(n)) {
+      if (wfKarte(n)) {
+        // Workflow-Karte im Agent-Graph: oben Name, unten die LEBENDIGE Miniatur der
+        // echten Kette — jeder Punkt ein Knoten der referenzierten Datei, in seiner
+        // Typ-Farbe, mit wanderndem Puls. Berechnet, nie gepflegt. Geister: leerer Plan.
+        const MF = { trigger: '#ff6d5a', skill: '#ea4b71', tool: '#8a8a8a', gate: '#b57617', software: '#1971c2', workflow: '#ff6900', agent: '#4f46e5' };
+        const mini = n.mini || [];
+        const strip = mini.length
+          ? mini.map((m, i) =>
+              `<i class="wfb-dot${m.g ? ' g' : ''}${m.t === 'gate' ? ' auge' : ''}" style="--c:${MF[m.t] || '#999'};--d:${(i * 0.32).toFixed(2)}s" title="${esc(TYP_LABEL[m.t] || m.t)}"></i>`
+            ).join('<span class="wfb-line"></span>')
+          : `<span class="wfb-plan">${n.geist ? 'geplant — Kette entsteht im Chat' : 'leer'}</span>`;
+        el.innerHTML =
+          `<div class="wfb-kopf">${LOGO.workflow}<b>${esc(n.name)}</b></div>` +
+          `<span class="wfb-sub">${esc(n.sub || '')}</span>` +
+          `<div class="wfb-kette">${strip}</div>` +
+          (n.typ === 'trigger' ? '' : '<span class="port in"></span>') + '<span class="port out"></span>' +
+          (neben ? '<span class="port sub"></span>' : '');
+      } else if (breit(n)) {
         el.innerHTML = icon +
           `<span class="dblbl"><b>${esc(n.name)}</b><span>${esc(n.sub || '')}</span></span>` +
           (unten(n) ? '<span class="port top"></span>' : (neben ? '<span class="port sub"></span>' : ''));
@@ -439,43 +445,43 @@ window.AWMS = (function () {
         el.innerHTML = icon + '<span class="port sub"></span>' +
           `<span class="lbl"><b>${esc(n.name)}</b><span>${esc(n.sub || '')}</span></span>`;
       } else {
+        // Trigger sind normalerweise Ketten-Anfang (kein Eingang) — steht aber etwas
+        // VOR ihnen (z.B. die Software, in der der Mensch den Auftrag auslöst),
+        // bekommen sie einen Eingangs-Anschluss, damit die Kante sauber andockt.
+        const triggerMitEingang = n.typ === 'trigger' && EDGES.some(k => k.typ === 'haupt' && k.nach === n.id);
         el.innerHTML =
           (n.typ === 'trigger' ? '<svg class="zap" viewBox="0 0 24 24" fill="#ff6d5a"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>' : '') +
           icon +
-          (n.typ === 'trigger' ? '' : '<span class="port in"></span>') + '<span class="port out"></span>' +
+          (n.typ === 'trigger' && !triggerMitEingang ? '' : '<span class="port in"></span>') + '<span class="port out"></span>' +
           (neben ? '<span class="port sub"></span>' : '') +
           (obenAgents.has(n.id) ? '<span class="port top"></span>' : '') +
           `<span class="lbl"><b>${esc(n.name)}</b><span>${esc(n.sub || '')}</span></span>`;
       }
+      if (n.neu) {
+        // Frisch-Abzeichen: berechnet aus der Datei-Zeit (Server), verblasst von selbst.
+        const relZeit = t => {
+          const min = Math.max(0, (Date.now() - Date.parse(t)) / 60000);
+          return min < 60 ? `vor ${Math.max(1, Math.round(min))} Min.`
+            : min < 60 * 24 ? `vor ${Math.round(min / 60)} Std.` : 'gestern';
+        };
+        el.insertAdjacentHTML('beforeend',
+          `<span class="neu-badge" title="${esc(n.datei || '')}">${n.neuArt === 'ueberarbeitet' ? 'geändert' : 'neu'}${n.frischSeit ? ' · ' + relZeit(n.frischSeit) : ''}</span>`);
+      }
+      // Umgebungs-Abzeichen: Standard-Rechenort ist der Server — nur Ausnahme-Knoten
+      // tragen "umgebung" in der Workflow-Datei (z.B. "mac" = läuft lokal bei Gaylord).
+      if (n.umgebung === 'mac') el.insertAdjacentHTML('beforeend',
+        `<span class="mac-badge" title="Dieser Schritt läuft lokal auf Gaylords Mac — nicht auf dem Server"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M2 19h20"/></svg>Mac</span>`);
+      // Daten-Chip: bei eingeklappter Daten-Ebene zeigt der Knoten, WOMIT er verbunden
+      // wäre („⛁ 2") — Klick auf den Chip holt die Ebene zurück. Reine Anzeige.
+      if (!meta && !unten(n) && datenVon[n.id]) {
+        const dp = [...datenVon[n.id]];
+        el.classList.add('hat-daten');
+        el.insertAdjacentHTML('beforeend',
+          `<span class="dbchip" title="${esc(dp.join(' · '))} — Klick blendet die Daten-Ebene wieder ein">${LOGO.datenbank}<i>${dp.length}</i></span>`);
+      }
       plane.appendChild(el); n.el = el;
     }
     for (const n of NODES) bauKnoten(n);
-
-    // ── Lose „Später"-Zettel ──
-    // Der einzige Zettel im Graph — und die bewusste Ausnahme zur Sticky-Note-Verbannung:
-    // er ist BERECHNET (aus spaeter-Flags), nie von Hand gepflegt. Er liegt frei auf der
-    // Fläche (Start: über der Lücke, wo die Zukunft hinge) und lässt sich verschieben.
-    spGruppen.forEach((z, i) => {
-      const merk = NOTIZ_POS[z.key];
-      const va = byId[z.gr.vorId], na = byId[z.gr.nachId];
-      z.x = merk ? merk.x
-        : va && na ? (cx(va) + cx(na)) / 2 - 85 + i * 26
-        : va ? va.x + nodeW(va) + 70 : na ? na.x - 250 : 160;
-      z.y = merk ? merk.y
-        : (va || na ? Math.min(va ? va.y : Infinity, na ? na.y : Infinity) : CHAIN_Y) - 180 + i * 26;
-      const namen = z.gr.knoten.filter(k => k.typ !== 'datenbank').map(k => k.name);
-      const dbs = z.gr.knoten.length - namen.length;
-      const el = document.createElement('div');
-      el.className = 'spnote';
-      el.dataset.z = i;
-      el.title = 'Klick = Zukunfts-Skizze · ziehen = verschieben (nur Optik)';
-      el.innerHTML =
-        `<b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4.5 5.5A1.5 1.5 0 0 1 6 4h12a1.5 1.5 0 0 1 1.5 1.5v8.7L14.2 19.5H6a1.5 1.5 0 0 1-1.5-1.5V5.5z"/><path d="M14.2 19.5V14h5.3"/></svg>Für später</b>` +
-        namen.map(nm => `<span>${esc(nm)}</span>`).join('') +
-        (dbs ? `<i>+ ${dbs} Datenbank${dbs > 1 ? 'en' : ''}</i>` : '');
-      el.style.left = z.x + 'px'; el.style.top = z.y + 'px';
-      plane.appendChild(el); z.el = el;
-    });
 
     // ── Drähte ──
     function svgEl(tag, attrs) {
@@ -483,8 +489,29 @@ window.AWMS = (function () {
       for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
       return el;
     }
+    // Orthogonaler Weg mit abgerundeten Ecken: senkrecht bis zur Spur, waagerecht,
+    // senkrecht zum Ziel. So laufen Datenbank-Anschlüsse als aufgeräumter „Bus"
+    // statt als lange Diagonalen quer durchs Leere.
+    function elbowPfad(x1, y1, x2, y2, laneY, r) {
+      const dv1 = laneY >= y1 ? 1 : -1, dv2 = y2 >= laneY ? 1 : -1;
+      const dh = x2 >= x1 ? 1 : -1;
+      const rx = Math.min(r, Math.abs(x2 - x1) / 2);
+      const r1 = Math.min(rx, Math.abs(laneY - y1));
+      const r2 = Math.min(rx, Math.abs(y2 - laneY));
+      return `M ${x1} ${y1}`
+        + ` V ${laneY - dv1 * r1}`
+        + ` Q ${x1} ${laneY} ${x1 + dh * r1} ${laneY}`
+        + ` H ${x2 - dh * r2}`
+        + ` Q ${x2} ${laneY} ${x2} ${laneY + dv2 * r2}`
+        + ` V ${y2}`;
+    }
     function drawWires() {
       wireg.textContent = '';
+      // Datenbank-Spuren: jede DB bekommt eine eigene waagerechte Höhe knapp über sich
+      // (nach x sortiert gestaffelt), damit sich die Busse verschiedener DBs nicht decken.
+      const dbLaneY = {};
+      NODES.filter(n => n.typ === 'datenbank').sort((p, q) => p.x - q.x)
+        .forEach((d, i) => { dbLaneY[d.id] = d.y - 8 - (18 + (i % 4) * 13); });
       for (const k of EDGES) {
         const a = byId[k.von], b = byId[k.nach];
         if (!a || !b) continue;
@@ -517,27 +544,98 @@ window.AWMS = (function () {
           // liest: DB/Wissen → Knoten (Pfeil endet am Unterseiten-Port) · schreibt: Knoten → DB.
           // Gibt es zwischen demselben Paar BEIDE Richtungen (Kreis), versetzen wir sie seitlich.
           const vonUnten = unten(a);
+          const untenNode = vonUnten ? a : b;
           const rueck = EDGES.some(o => o !== k && o.von === k.nach && o.nach === k.von);
           const off = rueck ? (k.typ === 'liest' ? -18 : 18) : 0;
           const x1 = cx(a) + off, y1 = vonUnten ? a.y - 8 : a.y + nodeH(a) + 8;
           const x2 = cx(b) + off, y2 = unten(b) ? b.y - 8 : b.y + nodeH(b) + 8;
-          const c = Math.max(36, Math.abs(y2 - y1) * 0.45);
-          d = `M ${x1} ${y1} C ${x1} ${vonUnten ? y1 - c : y1 + c}, ${x2} ${unten(b) ? y2 - c : y2 + c}, ${x2} ${y2}`;
-          lx = (x1 + x2) / 2 + 10; ly = (y1 + y2) / 2 + 4;
+          if (untenNode.typ === 'datenbank') {
+            // Datenbank-Bus: senkrecht runter → waagerecht in der DB-Spur → senkrecht in die DB.
+            const laneY = dbLaneY[untenNode.id];
+            d = elbowPfad(x1, y1, x2, y2, laneY, 11);
+            lx = (x1 + x2) / 2; ly = laneY - 5;
+          } else {
+            const c = Math.max(36, Math.abs(y2 - y1) * 0.45);
+            d = `M ${x1} ${y1} C ${x1} ${vonUnten ? y1 - c : y1 + c}, ${x2} ${unten(b) ? y2 - c : y2 + c}, ${x2} ${y2}`;
+            lx = (x1 + x2) / 2 + 10; ly = (y1 + y2) / 2 + 4;
+          }
         }
         if (k.typ !== 'haupt' && !klasse.includes('neben')) klasse += ' neben';
         // Kante an einem Konzept-Baustein (geist) wird selbst blass — die geplante
         // Zone der Kette liest sich als Zukunft, nicht als laufender Fluss.
         if (a.geist || b.geist) klasse += ' geist';
-        wireg.appendChild(svgEl('path', { d, class: klasse, 'marker-end': 'url(#arr)' }));
+        // Gruppe je Kante (Pfad + Label): kennt ihre Endpunkte — so kann der Fokus-Modus
+        // gezielt dimmen und die eingeklappte Daten-Ebene gezielt ausblenden.
+        const grp = svgEl('g', {
+          class: 'wgrp' + ((unten(a) || unten(b)) ? ' daten' : ''),
+          'data-von': k.von, 'data-nach': k.nach,
+        });
+        grp.appendChild(svgEl('path', { d, class: klasse, 'marker-end': 'url(#arr)' }));
         if (lx !== undefined) {
           const t = svgEl('text', { x: lx, y: ly, class: 'wlab', 'text-anchor': 'middle' });
           t.textContent = istRueck ? '↻ Schleife' : k.typ;
-          wireg.appendChild(t);
+          grp.appendChild(t);
         }
+        wireg.appendChild(grp);
       }
     }
     drawWires();
+
+    // ── Fokus-Modus: Blick auf einen Knoten — nur er, seine Nachbarn und seine
+    // Kanten bleiben hell, alles andere dimmt. Reine Optik beim Hovern, nichts
+    // wird verändert oder gespeichert. Das Kanten-Spaghetti verschwindet, sobald
+    // man irgendwo hinschaut. ──
+    const nachbarn = {};
+    for (const k of EDGES) {
+      (nachbarn[k.von] ||= new Set()).add(k.nach);
+      (nachbarn[k.nach] ||= new Set()).add(k.von);
+    }
+    const wiresSvg = content.querySelector('#wires');
+    let fokusTimer = null, fokusId = null;
+    function fokusAn(id) {
+      fokusId = id;
+      plane.classList.add('fokus'); wiresSvg.classList.add('fokus');
+      const nah = nachbarn[id] || new Set();
+      for (const n of NODES) n.el.classList.toggle('fon', n.id === id || nah.has(n.id));
+      wireg.querySelectorAll('.wgrp').forEach(gr =>
+        gr.classList.toggle('fon', gr.dataset.von === id || gr.dataset.nach === id));
+    }
+    function fokusAus() {
+      if (fokusTimer) { clearTimeout(fokusTimer); fokusTimer = null; }
+      if (fokusId === null) return;
+      fokusId = null;
+      plane.classList.remove('fokus'); wiresSvg.classList.remove('fokus');
+      plane.querySelectorAll('.node.fon').forEach(el => el.classList.remove('fon'));
+      wireg.querySelectorAll('.wgrp.fon').forEach(el => el.classList.remove('fon'));
+    }
+    plane.addEventListener('pointerover', e => {
+      const el = e.target.closest('.node');
+      if (!el || el.dataset.id === fokusId) return;
+      if (fokusTimer) clearTimeout(fokusTimer);
+      // kleine Verzögerung: beim Drüberstreichen flackert nichts
+      fokusTimer = setTimeout(() => { fokusTimer = null; if (!drag) fokusAn(el.dataset.id); }, 140);
+    });
+    plane.addEventListener('pointerout', e => {
+      const el = e.target.closest('.node');
+      if (!el || el.contains(e.relatedTarget)) return;
+      fokusAus();
+    });
+
+    // ── Daten-Ebene einklappbar (Schalter unten links): Datenbanken & Wissens-Dateien
+    // samt Kanten ausblenden — die Kette zeigt stattdessen je Knoten den Daten-Chip.
+    // Zustand ist reine Optik (lebt nur im Browser, wie Zoom) und überlebt Re-Renders. ──
+    let dbZu = !meta && !!EBENE_ZU[notizKey];
+    const ebBtn = content.querySelector('#z-eb');
+    function ebeneAnwenden() {
+      plane.classList.toggle('db-zu', dbZu);
+      wiresSvg.classList.toggle('db-zu', dbZu);
+      if (ebBtn) {
+        ebBtn.classList.toggle('aus', dbZu);
+        ebBtn.title = dbZu ? 'Daten-Ebene einblenden' : 'Daten-Ebene ausblenden';
+      }
+    }
+    if (ebBtn && !NODES.some(unten)) ebBtn.remove(); // alle Daten-Knoten liegen im „Später"-Zettel
+    ebeneAnwenden();
 
     // ── Punkte-Raster mit Maus-Gravitation (Stitch-Idee, bewusst dezenter) ──
     // Eigenes Canvas hinter der Fläche: die Punkte wandern mit Pan & Zoom (überall im
@@ -603,7 +701,6 @@ window.AWMS = (function () {
     vp.addEventListener('pointerleave', () => { maus.ziel = 0; dotsTick(); });
 
     // ── Pan & Zoom ──
-    const wiresSvg = content.querySelector('#wires');
     const apply = () => {
       plane.style.transform = `translate(${tx}px,${ty}px) scale(${sc})`;
       // Kanten-Labels erst zeigen, wenn man nah genug dran ist — sonst Label-Brei.
@@ -613,8 +710,8 @@ window.AWMS = (function () {
     function fit() {
       const vw = vp.clientWidth, vh = vp.clientHeight;
       if (!vw || !vh) { setTimeout(() => { if (aktiverFit === fitWennRuhig) fit(); }, 100); return; }
-      const els = NODES.map(n => ({ x: n.x, y: n.y, w: nodeW(n), h: nodeH(n) + 44 }))
-        .concat(spGruppen.map(z => ({ x: z.x, y: z.y, w: 190, h: 110 })));
+      const els = NODES.filter(n => !(dbZu && unten(n))) // eingeklappte Daten-Ebene zählt nicht mit
+        .map(n => ({ x: n.x, y: n.y, w: nodeW(n), h: nodeH(n) + 44 }));
       if (!els.length) return;
       const minX = Math.min(...els.map(e => e.x)) - 60, maxX = Math.max(...els.map(e => e.x + e.w)) + 60;
       // Oben mehr Luft, damit Rückwärts-Schleifen (über der Kette) nicht abgeschnitten werden.
@@ -630,6 +727,11 @@ window.AWMS = (function () {
     content.querySelector('#z-in').onclick = () => { bewegt = true; sc = Math.min(2, sc * 1.18); apply(); };
     content.querySelector('#z-out').onclick = () => { bewegt = true; sc = Math.max(.25, sc / 1.18); apply(); };
     content.querySelector('#z-fit').onclick = () => { bewegt = false; fit(); };
+    if (ebBtn && ebBtn.isConnected) ebBtn.onclick = () => {
+      dbZu = !dbZu; EBENE_ZU[notizKey] = dbZu;
+      ebeneAnwenden();
+      if (!bewegt) fit();
+    };
     vp.addEventListener('wheel', e => {
       e.preventDefault();
       bewegt = true;
@@ -646,13 +748,13 @@ window.AWMS = (function () {
     // sonst verschiebt sich der Canvas unsichtbar gegen die transform-Koordinaten.
     vp.addEventListener('scroll', () => { vp.scrollTop = 0; vp.scrollLeft = 0; });
 
-    // ── Dragging: Pan auf Hintergrund, Zettel verschieben (nur Optik) ──
-    // Blöcke sind bewusst NICHT verschiebbar (Viktors Entscheid): das Layout ist
+    // ── Dragging: Pan auf Hintergrund ──
+    // Blöcke sind bewusst NICHT verschiebbar (Gaylords Entscheid): das Layout ist
     // berechnet, nichts soll sich von Hand „verpflegen" lassen. Klick zählt trotzdem.
     vp.addEventListener('pointerdown', e => {
-      const noteEl = e.target.closest('.spnote');
+      const chipEl = e.target.closest('.dbchip');
       const nodeEl = e.target.closest('.node');
-      if (noteEl) { const z = spGruppen[noteEl.dataset.z]; drag = { t: 'note', z, sx: e.clientX, sy: e.clientY, ox: z.x, oy: z.y, moved: false }; }
+      if (chipEl) { drag = { t: 'chip', sx: e.clientX, sy: e.clientY, moved: false }; }
       else if (nodeEl) { drag = { t: 'node', n: byId[nodeEl.dataset.id], sx: e.clientX, sy: e.clientY, moved: false }; }
       else { drag = { t: 'pan', sx: e.clientX, sy: e.clientY, ox: tx, oy: ty }; vp.classList.add('panning'); }
       vp.setPointerCapture(e.pointerId);
@@ -662,15 +764,18 @@ window.AWMS = (function () {
       const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
       if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
       if (drag.t === 'pan') { bewegt = true; tx = drag.ox + dx; ty = drag.oy + dy; apply(); }
-      else if (drag.t === 'note') { const z = drag.z; z.x = drag.ox + dx / sc; z.y = drag.oy + dy / sc; z.el.style.left = z.x + 'px'; z.el.style.top = z.y + 'px'; }
     });
     vp.addEventListener('pointerup', () => {
-      if (drag && drag.t === 'note') {
-        if (drag.moved) NOTIZ_POS[drag.z.key] = { x: drag.z.x, y: drag.z.y };
-        else zeigeSkizze(drag.z.gr);
+      if (drag && drag.t === 'chip' && !drag.moved) {
+        // Daten-Chip angeklickt → Daten-Ebene wieder einblenden
+        dbZu = false; EBENE_ZU[notizKey] = false;
+        ebeneAnwenden();
+        if (!bewegt) fit();
       } else if (drag && drag.t === 'node' && !drag.moved) {
         const n = drag.n;
-        if (meta && n.typ === 'workflow' && opts.aufWorkflow) opts.aufWorkflow(n);
+        // Workflow-Knoten (Meta wie Agent-Graph): Klick öffnet die referenzierte Kette —
+        // Geister haben keine Datei, sie zeigen ihr Panel (die Skizze der Rolle).
+        if (n.typ === 'workflow' && !n.geist && n.kurz && opts.aufWorkflow) opts.aufWorkflow(n);
         else window.openPanel(n);
       }
       if (drag && drag.t === 'pan') vp.classList.remove('panning');
@@ -686,10 +791,26 @@ window.AWMS = (function () {
       fit();
     }
 
+    if (g.alarm && g.alarm.length) zeigAlarm(content, g.alarm);
     if (g.warnungen && g.warnungen.length) {
       zeigFehler(content, 'Warnung beim Lesen der Dateien', g.warnungen.join(' · '), true);
     }
     return { getView: () => ({ tx, ty, sc, bewegt }) };
+  }
+
+  // ALARM: rote pochende Glocke + lila Alarmkreis + fliegendes Einhorn 🦄 — wenn etwas
+  // fehlschlägt (Kling-Reject/keine Credits, ElevenLabs-401, übersprungener Schritt).
+  function zeigAlarm(content, alarm) {
+    content.querySelectorAll('.lkalarm').forEach(x => x.remove());
+    const el = document.createElement('div');
+    el.className = 'lkalarm';
+    const liste = alarm.slice(0, 5).map(a =>
+      `<div class="lkalarm-item">⚠️ <b>${esc(a.kind || 'Fehler')}</b>${a.node ? ` · ${esc(a.node)}` : ''}${a.message ? ` — ${esc(a.message)}` : ''}</div>`).join('');
+    el.innerHTML =
+      `<div class="lkalarm-uni">🦄</div>` +
+      `<div class="lkalarm-glocke"><div class="lkalarm-ring"></div><span>🔔</span></div>` +
+      `<div class="lkalarm-box"><b>ALARM — irgendwas stimmt nicht (${alarm.length})</b>${liste}</div>`;
+    content.appendChild(el);
   }
 
   function zeigFehler(content, titel, text, warn) {

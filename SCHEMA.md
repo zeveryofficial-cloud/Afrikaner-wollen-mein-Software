@@ -12,14 +12,14 @@ description: "<ein Satz, was der Skill tut>"
 # <Titel>
 <Prozedur: Zweck, Eingabe, nummerierte Schritte, Ausgabe>
 ```
-Skills mit `awms: system` im Frontmatter sind Werkzeuge des Tools selbst
-(z.B. `/entwurf`, `/festhalten`) und erscheinen nicht als Business-Bausteine.
+Skills mit `awms: befehl` oder `awms: system` im Frontmatter sind Werkzeuge des
+Tools selbst (z.B. `/feedback`, `execute`) und erscheinen nicht als Business-Bausteine.
 
 ## Datenbank — `datenbanken/<name>/DATENBANK.md` (Vertragskarte)
 ```
 ---
 name: <name>
-typ: <Art der Datenbank — z.B. Tabelle (CSV) · Vektor · Datei-Sammlung>
+typ: <Art der Datenbank — z.B. CSV (Tabelle) · Vektor · Wiki (Karpathy-Methode) · Datei-Sammlung>
 zweck: <wozu sie da ist>
 schreibt: <wer reinschreibt>
 liest: <wer rausliest>
@@ -31,8 +31,26 @@ Die Einträge selbst liegen daneben (z.B. `eintraege/*.md`, `daten.csv`). Auch d
 Abfrage-Code einer Datenbank lebt IM Baustein (z.B. `voc-search.ts` neben der DB) —
 eine Abfrage-Schnittstelle ist kein eigenes Tool.
 **Arten:** Der Graph erkennt die Art am `typ` und rendert sie unterschiedlich —
-beginnt `typ` mit „Vektor", bekommt der Baustein das Vektor-Design (gleiche Farbe,
-eigener Look). Weitere Arten folgen nach Bedarf.
+beginnt `typ` mit „Vektor", bekommt der Baustein das Vektor-Design; beginnt er mit
+„Wiki", das Wiki-Design; beginnt er mit „CSV", das Tabellen-Design (gleiche Farbe,
+je eigener Look). Weitere Arten nach Bedarf.
+**Wiki-Datenbank** (Karpathys LLM-Wiki-Methode): zweischichtig — `raw/` (Quellen,
+append-only, wird NIE editiert) + `wiki/` (von der KI kompilierte, verlinkte Seiten
+mit `index.md` als Katalog) + `log.md` (append-only Chronik jeder Berührung).
+Das Betriebssystem der Wiki-DB ist ihre DATENBANK.md: Sie enthält die Betriebsregeln
+(Einatmen, Lesen über den Index, Rückfluss, Lint-Rhythmus), und **jede KI-Session,
+die eine Wiki-DB liest oder schreibt, liest ZUERST deren DATENBANK.md und folgt ihr** —
+so ist die Pflege in die Nutzung eingebaut statt ein eigenes Ritual (analog zum
+Embedding-Code, der IM Vektor-Baustein lebt).
+**CSV-Datenbank** (Tabelle): eine Zeile pro Ding, feste Spalten — für viele
+gleichartige Einträge, die eine KI später vergleichen und auf Muster auswerten soll.
+Die Datenbank SPEICHERT nur; ausgewertet wird von außen, von wem auch immer sie liest.
+Aufbau: `daten.csv` (Kopfzeile = Spaltennamen) + Spalten-Schema in der DATENBANK.md
+(je Spalte Art und bei Kategorien die Werteliste) + `eintraege/<id>/` (Langtexte/
+Assets, die Zelle hält den Pfad) + `log.md` (Chronik). Ihr Betriebssystem ist
+Schema-Disziplin: Zeilen folgen dem Spalten-Vertrag, Kategorie-Werte exakt aus der
+Werteliste, leere Zellen bleiben leer (nie erfinden), Zeilen dürfen später ergänzt
+werden (z.B. Ergebnisse) — Prüfung per `datenbanken/csv-check.py <pfad-zur-db>`.
 
 ## Tool — `tools/<name>/README.md`
 Erste Zeile `# <name>`, danach was das Tool tut (bzw. täte, wenn Platzhalter).
@@ -80,7 +98,7 @@ Workflow-Geist (Kanten an ihm faden mit), der Header zählt sie („N geplant").
 die Karte ehrlich, auch wenn Ist-Zustand und geplanter Umbau nebeneinander stehen: volle
 Knoten = läuft schon, blasse = nur Idee. Ist der Code gebaut, streicht die KI das Flag.
 Konzept gilt nur für ADDITIVES (hinten dran, Zwischenschritt) — für Ersatz siehe Ebenen.
-**Ebenen — Konzept vs. experimentelle Idee (Viktors Unterscheidung):** Eine
+**Ebenen — Konzept vs. experimentelle Idee (Gaylords Unterscheidung):** Eine
 EXPERIMENTELLE IDEE ersetzt Gebautes, statt nur zu ergänzen — Ersatz und Original dürfen
 nie zusammen in einer Kette stehen (als Ablauf gelesen: Unsinn). Darum je Workflow
 optional: `"experiment": { "name": "...", "ersetzt": ["<knoten-id>", …] }` plus
@@ -88,6 +106,36 @@ optional: `"experiment": { "name": "...", "ersetzt": ["<knoten-id>", …] }` plu
 Ebenen-Umschalter „Aktuell ⇄ Idee": Aktuell blendet die idee-Knoten aus, Idee blendet
 die ersetzten aus — immer nur EINE stimmige Kette. Die Datei bleibt die eine Wahrheit
 (nichts dupliziert); wird die Idee gebaut, fliegen ersetzte Knoten + Flags raus.
+
+**Lauf-Zeiger — `"lauf": { basis, zeiger }` in der Agentik-Karte:** `basis` ist der
+Projekte-Ordner, `zeiger` eine JSON-Datei (`_lauf.json`), die sagt, welches Projekt in
+welchem Workflow GERADE läuft: `{ "projekt", "workflow", "gestartet" }`. Nur dann
+berechnet der Graph Lauf-Status (Häkchen/läuft/Alarm) aus Artefakten + `_run/log.jsonl`.
+**Ein Lauf ENDET, indem der Ausführende `"beendet": "<datum>"` (+ optional `"ergebnis"`)
+in die Zeiger-Datei schreibt — Pflicht, sobald das letzte Werkstück geliefert ist**
+(Gaylords Ansage 17.07.2026: nach getaner Arbeit aufräumen, keine ewigen Häkchen). Mit
+`beendet` zeigt der Graph KEINEN Status und KEINEN Alarm mehr; der nächste Lauf
+überschreibt die Datei frisch (ohne `beendet`). Die Historie liegt in `_run/log.jsonl`
+des Projekts, nicht im Graph.
+
+## Agent — `agenten/<name>.json`
+Die Rollen des Unternehmens (Gaylords Protein-Bild: Bausteine = Aminosäuren, Workflows =
+Ketten, Agenten = gefaltete Proteine). Ein Agent bündelt einen Aufgabenbereich wie ein
+eingestellter Mitarbeiter („Native Copywriter"): Er kettet **Workflows als Bausteine**
+UND direkt Skills/Tools/Datenbanken — zwischen zwei Workflows dürfen einzelne Bausteine
+stehen. Schema = exakt das Workflow-Schema, mit EINEM zusätzlichen Knotentyp:
+```json
+{ "id": "avatar", "typ": "workflow", "name": "Avatar-Research", "ref": "workflows/avatar-research.json" }
+```
+- `ref` zeigt auf die Workflow-DATEI (nicht auf einen Ordner). Fehlt sie oder fehlt
+  `ref`, ist der Knoten ein Geist („geplant") — wie überall.
+- **Eine Ebene, keine Rekursion:** `workflow`-Knoten gibt es NUR in Agent-Dateien,
+  nie in Workflow-Dateien. Keine Agenten in Agenten.
+- Ein Workflow darf von beliebig vielen Agenten referenziert werden (Zugehörigkeit
+  ist Referenz, kein Ordner) — inhale-knowledge kann in drei Rollen arbeiten.
+- Optionales Feld `mission`: ein Satz, was die Rolle liefert (Anzeige in der Liste).
+- Der Graph malt je Workflow-Knoten eine **berechnete Miniatur** seiner echten Kette
+  (Knotentypen in Reihenfolge, aus der referenzierten Datei gelesen) — nie gepflegt.
 
 ## Workflow — `workflows/<name>.json`
 ```json
@@ -110,13 +158,23 @@ die ersetzten aus — immer nur EINE stimmige Kette. Die Datei bleibt die eine W
 ## Regeln
 - `typ` je Knoten: `trigger` · `skill` · `tool` · `software` · `datenbank` · `gate`. `ref` zeigt
   auf den Baustein-Ordner IM SELBEN Projekt; Trigger und Gates leben nur in der Workflow-Datei.
+- **`"projekt": "<Name aus projekte.json>"`** (optional, je Knoten): der Baustein wohnt in
+  einem ANDEREN registrierten Projekt — `ref` gilt dann relativ zu dessen Wurzel.
+  Für Ketten über Projektgrenzen (z.B. der Longform-Workflow beginnt in der Software
+  eine Software des Stamm-Projekts). Sparsam nutzen: der Normalfall bleibt das eigene Projekt.
+- **`"umgebung": "mac"`** (optional, je Knoten): dieser Schritt läuft lokal auf Gaylords
+  Mac statt auf dem Server. Der Server ist der Standard-Rechenort und bleibt unmarkiert —
+  nur die Ausnahmen tragen das Feld. Der Graph zeigt ein Mac-Abzeichen am Knoten,
+  das Panel eine Umgebungs-Zeile. Ein Fakt der Kette, kein Pflege-Feld.
+- **`"dienste": ["Gemini API", "Suno (kie.ai)"]`** (optional, je Knoten): externe
+  Modelle/APIs, die der Knoten ruft — der Graph zeichnet je Dienst einen eigenen
+  Stecker-Baustein DIREKT ÜBER dem Knoten mit Hin (prompt) und Zurück (antwort),
+  exakt wie die Tool-Anrufe der Software-Agentik; das Panel listet sie zusätzlich.
+  Namen nennen die Art wie dort („Gemini API", „Suno (kie.ai)"). Lokal Laufendes
+  (ffmpeg, Whisper im venv) ist kein Dienst und bekommt keinen Stecker.
 - Kanten: `haupt` (Arbeitsfluss) · `liest` (Datenbank→Knoten) · `schreibt` (Knoten→Datenbank).
   Verzweigungen sind erlaubt (mehrere haupt-Kanten von einem Knoten, Zweige dürfen wieder
   zusammenlaufen). Kreise über Datenbanken sind erwünscht.
 - KEINE Positionen, KEIN Status, KEINE Icons in den Dateien — der Graph berechnet alles
   (Layout, Logos je Typ, „zuletzt geändert" aus mtime, Lose-Skills-Regal aus fehlenden Referenzen).
-- Einzige Entscheidungs-Markierung: `"spaeter": true` an einem (Geister-)Knoten = bewusst
-  zurückgestellt. Viktor sagt es im Chat, die KI schreibt es (Skill `/spaeter`). Der Knoten
-  verschwindet aus der Kette (sie zeigt nur das Jetzt) und liegt als loser gelber Zettel
-  auf der Fläche (verschiebbar, nur Optik) — Klick zeigt die Zukunfts-Skizze. Zählt nicht
-  als offene Arbeit, Läufe überspringen ihn.
+
